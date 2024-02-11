@@ -1,14 +1,13 @@
-# PositionMe
+## PositionMe
 Indoor poistioning data collection application created for the University of Edinburgh's Embedded Wireless course. 
 
-## Requirements
+### Requirements
 
 - Android Studio 4.2 or later
 - Android SDK 30 or later
 
 ****
-Changelog
-****
+# Changelog
 
 This file records every software update and development process.
 
