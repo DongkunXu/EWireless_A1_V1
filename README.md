@@ -8,7 +8,7 @@ Indoor poistioning data collection application created for the University of Edi
 
 ## Installation
 
-1. Clone the repository.
+1. Clone the repository. :heavy_check_mark:
 2. Open the project in Android Studio.
 3. Add your own API key for Google Maps in AndroidManifest.xml
 4. Set the website where you want to send your data. The application was built for use with openpositioning.org.
