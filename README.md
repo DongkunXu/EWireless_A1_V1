@@ -11,7 +11,7 @@ Indoor poistioning data collection application created for the University of Edi
 
 This file records every software update and development process.
 
-===========================
+====
 
 ## [0.1.1] - 2024-02-11
 Under Development
@@ -28,6 +28,26 @@ Under Development
 
 ### Fixed
 :hammer: Using Gradle version 7.2. Fixed the bug that the plugin version is not supported.
+
+
+## [0.1.2] - 2024-02-12
+Under Development
+
+### Added
+:heavy_plus_sign: Indoor map of second building.<br>
+:heavy_plus_sign: UI interaction logic for indoor maps of multiple buildings.<br>
+:heavy_plus_sign: New real-time location display function.<br>
+:heavy_plus_sign: New arrow icon to show user location.<br>
+:heavy_plus_sign: The function of displaying the user's orientation on the map in real time.
+
+### Changed
+ :recycle: UI designs. <br>
+ :recycle: Optimize the UI interaction logic of the map interface.
+
+
+### Fixed
+:hammer: Fixed a bug where two maps were displayed at the same time and could not disappear.<br>
+:hammer: Fixed the BUG of user orientation display deviation.
 
 
 
