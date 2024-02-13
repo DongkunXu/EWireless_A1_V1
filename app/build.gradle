@@ -47,6 +47,8 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java-util:3.0.0"
     implementation "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava"
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+
     // Navigation components
     def nav_version = "2.5.3"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"

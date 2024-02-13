@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.openpositioning.PositionMe.R;
 import com.openpositioning.PositionMe.sensors.SensorFusion;
@@ -33,6 +34,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+//import com.example.yourapp.GeofenceBroadcastReceiver;
 
 
 /**
@@ -307,6 +312,36 @@ public class StartLocationFragment extends Fragment {
                 Navigation.findNavController(view).navigate(action);
             }
         });
+
+        // 定位按钮
+        Button locateButton = view.findViewById(R.id.locateButton); // 假设按钮ID为locateButton
+        locateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (sensorFusion != null) {
+                    float[] currentPosition = sensorFusion.getGNSSLatitude(false);
+                    LatLng userLocation = new LatLng(currentPosition[0], currentPosition[1]);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 300));
+                }
+            }
+        });
+
+        // 重置旋转按钮
+        Button resetRotationButton = view.findViewById(R.id.resetRotationButton); // 假设按钮ID为resetRotationButton
+        resetRotationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(
+                        new CameraPosition.Builder()
+                                .target(mMap.getCameraPosition().target) // 保持当前位置不变
+                                .zoom(mMap.getCameraPosition().zoom) // 保持当前缩放级别不变
+                                .tilt(0) // 重置倾斜角度为0
+                                .bearing(0) // 重置旋转角度为0，即北方向朝上
+                                .build()
+                ));
+            }
+        });
+
 
             // Find Switch and set up a listener
         Switch mapTypeSwitch = view.findViewById(R.id.switch_map_type);
