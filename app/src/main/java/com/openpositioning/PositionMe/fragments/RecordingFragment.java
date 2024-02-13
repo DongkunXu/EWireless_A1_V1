@@ -180,7 +180,7 @@ public class RecordingFragment extends Fragment {
         this.timeRemaining = getView().findViewById(R.id.timeRemainingBar);
 
         // Display a blinking red dot to show recording is in progress
-        blinkingRecording();
+        blinkingRecording();              //      ------------------------------------------------------------------->
 
         // Check if there is manually set time limit:
         if(this.settings.getBoolean("split_trajectory", false)) {

@@ -13,6 +13,7 @@ import android.os.PowerManager;
 
 import androidx.preference.PreferenceManager;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.openpositioning.PositionMe.MainActivity;
 import com.openpositioning.PositionMe.PathView;
 import com.openpositioning.PositionMe.PdrProcessing;
@@ -133,6 +134,9 @@ public class SensorFusion implements SensorEventListener, Observer {
     // PDR calculation class
     private PdrProcessing pdrProcessing;
 
+    private LatLng currentLatLng;
+    private float currentBearing;
+
     // Trajectory displaying class
     private PathView pathView;
 
@@ -170,6 +174,29 @@ public class SensorFusion implements SensorEventListener, Observer {
         this.startLocation = new float[2];
     }
 
+    // --------------------------------------- My Code ------------------------------------------------ //
+
+    public interface SensorUpdateCallback {
+        void onLocationChanged(LatLng newPosition);
+        void onOrientationChanged(float newOrientation);
+    }
+
+    private SensorUpdateCallback sensorUpdateCallback;
+
+    public void setSensorUpdateCallback(SensorUpdateCallback callback) {
+        this.sensorUpdateCallback = callback;
+    }
+
+    //@Override
+    public void onLocationChanged(Location location) {
+        if(location != null && sensorUpdateCallback != null){
+            LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
+            sensorUpdateCallback.onLocationChanged(newPosition);
+        }
+    }
+
+
+    // --------------------------------------- My Code ------------------------------------------------ //
 
     /**
      * Static function to access singleton instance of SensorFusion.
@@ -313,13 +340,34 @@ public class SensorFusion implements SensorEventListener, Observer {
                 magneticField[2] = sensorEvent.values[2];
                 break;
 
-            case Sensor.TYPE_ROTATION_VECTOR:
+            /*case Sensor.TYPE_ROTATION_VECTOR:
                 // Save values
                 this.rotation = sensorEvent.values.clone();
                 float[] rotationVectorDCM = new float[9];
                 SensorManager.getRotationMatrixFromVector(rotationVectorDCM,this.rotation);
                 SensorManager.getOrientation(rotationVectorDCM, this.orientation);
+                break;*/
+
+            // --------------------------------------- My Code ------------------------------------------------ //
+
+            case Sensor.TYPE_ROTATION_VECTOR:
+                // Save values
+                this.rotation = sensorEvent.values.clone();
+                float[] rotationMatrix = new float[9];
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, this.rotation);
+                float[] orientationAngles = new float[3];
+                SensorManager.getOrientation(rotationMatrix, orientationAngles);
+
+                // Convert radians to degrees and normalize the angle
+                float newOrientation = (float) Math.toDegrees(orientationAngles[0]);
+                newOrientation = (newOrientation + 360) % 360;
+
+                if(sensorUpdateCallback != null){
+                    sensorUpdateCallback.onOrientationChanged(newOrientation + 180);
+                }
                 break;
+
+            // --------------------------------------- My Code ------------------------------------------------ //
 
             case Sensor.TYPE_STEP_DETECTOR:
                 //Store time of step
@@ -336,6 +384,8 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setRelativeTimestamp(android.os.SystemClock.uptimeMillis() - bootTime)
                             .setX(newCords[0]).setY(newCords[1]));
                 }
+
+
                 break;
         }
     }
@@ -355,6 +405,9 @@ public class SensorFusion implements SensorEventListener, Observer {
                 //Toast.makeText(context, "Location Changed", Toast.LENGTH_SHORT).show();
                 latitude = (float) location.getLatitude();
                 longitude = (float) location.getLongitude();
+                // --------------------------------------- My Code ------------------------------------------------ >>>
+                currentLatLng = new LatLng(latitude, longitude);
+                // --------------------------------------- My Code ------------------------------------------------ <<<
                 float altitude = (float) location.getAltitude();
                 float accuracy = (float) location.getAccuracy();
                 float speed = (float) location.getSpeed();
@@ -369,6 +422,11 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setProvider(provider)
                             .setRelativeTimestamp(System.currentTimeMillis()-absoluteStartTime));
                 }
+                // --------------------------------------- My Code ------------------------------------------------ >>>
+                if(sensorUpdateCallback != null){
+                    sensorUpdateCallback.onLocationChanged(currentLatLng);
+                }
+                // --------------------------------------- My Code ------------------------------------------------ >>>
             }
         }
     }

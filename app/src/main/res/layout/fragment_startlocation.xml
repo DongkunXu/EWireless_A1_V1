@@ -109,13 +109,13 @@
                     android:id="@+id/floor_lowground"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Lo G" />
+                    android:text="LG" />
 
                 <Button
                     android:id="@+id/floor_upground"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Up G" />
+                    android:text="UG" />
 
                 <Button
                     android:id="@+id/floor_1"

@@ -1,5 +1,9 @@
 package com.openpositioning.PositionMe.fragments;
 
+import static com.google.common.reflect.Reflection.getPackageName;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +17,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.openpositioning.PositionMe.R;
 import com.openpositioning.PositionMe.sensors.SensorFusion;
@@ -57,6 +63,7 @@ public class StartLocationFragment extends Fragment {
     private NoreenandKennethMurrayLibraryMap noreenandKennethMurrayLibry;
     private LinearLayout FloorButtons;
     private LinearLayout FloorButtonsNK;
+    private Marker currentPositionMarker;
 
     /**
      * Public Constructor for the class.
@@ -74,7 +81,7 @@ public class StartLocationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();  // --- useless?
         View rootView = inflater.inflate(R.layout.fragment_startlocation, container, false);
 
         //Obtain the start position from the GPS data from the SensorFusion class
@@ -89,6 +96,21 @@ public class StartLocationFragment extends Fragment {
         SupportMapFragment supportMapFragment = (SupportMapFragment)
                 getChildFragmentManager().findFragmentById(R.id.startMap);
 
+        // 设置SensorFusion回调
+        sensorFusion.setSensorUpdateCallback(new SensorFusion.SensorUpdateCallback() {
+            @Override
+            public void onLocationChanged(LatLng newPosition) {
+                // 更新箭头的位置
+                updatePosition(newPosition);
+            }
+
+            @Override
+            public void onOrientationChanged(float newOrientation) {
+                // 更新箭头的方向
+                updateOrientation(newOrientation);
+            }
+        });
+
         // Asynchronous map which can be configured
         supportMapFragment.getMapAsync(new OnMapReadyCallback() {
             /**
@@ -100,6 +122,7 @@ public class StartLocationFragment extends Fragment {
              */
             @Override
             public void onMapReady(GoogleMap googleMap) {
+
 
                 mMap = googleMap;
 
@@ -121,9 +144,20 @@ public class StartLocationFragment extends Fragment {
 
 
                 // Add a marker in current GPS location and move the camera
+                //position = new LatLng(startPosition[0], startPosition[1]);
+                //mMap.addMarker(new MarkerOptions().position(position).title("Start Position")).setDraggable(false);
+                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
+
                 position = new LatLng(startPosition[0], startPosition[1]);
-                mMap.addMarker(new MarkerOptions().position(position).title("Start Position")).setDraggable(false);
+                // 替换标记为箭头图标
+                currentPositionMarker = mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.tran)) // 使用箭头图标
+                        .icon(resizeMapIcons("tran",90,90))
+                        .anchor(0.5f, 0.5f) // 确保箭头是从中心点旋转
+                        .flat(true)); // 确保箭头平贴在地图上旋转
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
+
 
 
 
@@ -163,6 +197,33 @@ public class StartLocationFragment extends Fragment {
         return rootView;
     }
 
+    public void updatePositionAndOrientation(LatLng newPosition, float newOrientation) {
+        if (currentPositionMarker != null) {
+            currentPositionMarker.setPosition(newPosition); // 更新位置
+            currentPositionMarker.setRotation(newOrientation); // 根据orientation更新箭头方向
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 确保在这里注册传感器监听器来更新位置
+        sensorFusion.resumeListening();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // 确保在这里注销传感器监听器来停止更新位置
+        sensorFusion.stopListening();
+    }
+
+    private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){
+        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getActivity().getPackageName()));
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
+        return BitmapDescriptorFactory.fromBitmap(resizedBitmap);
+    }
+
 
     private void setupFloorSelectionButtons(View view) {
         //LinearLayout FloorButtons = view.findViewById(R.id.FloorButtons);
@@ -196,6 +257,17 @@ public class StartLocationFragment extends Fragment {
         }
     }
 
+    private void updatePosition(LatLng newPosition) {
+        if(currentPositionMarker != null) {
+            currentPositionMarker.setPosition(newPosition);
+        }
+    }
+
+    private void updateOrientation(float newOrientation) {
+        if(currentPositionMarker != null) {
+            currentPositionMarker.setRotation(newOrientation);
+        }
+    }
 
     /**
      * {@inheritDoc}
@@ -206,6 +278,7 @@ public class StartLocationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.startMap);
         //mapFragment.getMapAsync(this);
+
 
         // 楼层按钮初始化
         FloorButtons = view.findViewById(R.id.FloorButtons); // 确保你的布局文件中有这个ID
@@ -243,7 +316,7 @@ public class StartLocationFragment extends Fragment {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (mMap != null) { // 使用类级别的GoogleMap引用来切换地图类型
                         if (isChecked) {
-                            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                         } else {
                             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                         }
