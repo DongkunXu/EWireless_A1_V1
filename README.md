@@ -44,10 +44,25 @@ Under Development
  :recycle: UI designs. <br>
  :recycle: Optimize the UI interaction logic of the map interface.
 
-
 ### Fixed
 :hammer: Fixed a bug where two maps were displayed at the same time and could not disappear.<br>
 :hammer: Fixed the BUG of user orientation display deviation.
+
+
+## [0.1.3] - 2024-02-13
+Under Development
+
+### Added
+:heavy_plus_sign: The function of automatically displaying the indoor map when the user enters a specific area has been added.<br>
+:heavy_plus_sign: The function of finding your own location with one click has been added.<br>
+
+### Changed
+ :recycle: Changed default map zoom level for a more comfortable viewing angle. <br>
+
+### Fixed
+:hammer: Fixed a bug where geofences could not be effectively triggered.<br>
+:hammer: Geofence triggering logic bug fixed. <br>
+:hammer: Fixed an error where the orientation did not match the user's actual situation in some cases.
 
 
 

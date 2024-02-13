@@ -363,7 +363,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                 newOrientation = (newOrientation + 360) % 360;
 
                 if(sensorUpdateCallback != null){
-                    sensorUpdateCallback.onOrientationChanged(newOrientation + 180);
+                    sensorUpdateCallback.onOrientationChanged(newOrientation );
                 }
                 break;
 

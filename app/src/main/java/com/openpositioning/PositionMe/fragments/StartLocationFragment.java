@@ -1,10 +1,17 @@
 package com.openpositioning.PositionMe.fragments;
 
 import static com.google.common.reflect.Reflection.getPackageName;
+import static com.openpositioning.PositionMe.fragments.GeofenceManager.GEOFENCE_ID_NKLIB;
+import static com.openpositioning.PositionMe.fragments.GeofenceManager.GEOFENCE_ID_NUCLEAR;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +20,14 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -38,6 +49,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 //import com.example.yourapp.GeofenceBroadcastReceiver;
+
+import android.content.BroadcastReceiver;
+import android.widget.Toast;
 
 
 /**
@@ -63,12 +77,14 @@ public class StartLocationFragment extends Fragment {
     private float[] startPosition = new float[2];
     //Zoom of google maps
     private float zoom = 19f;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private GoogleMap mMap;
     private NuclearBuildingManager nuclearBuildingManager;
     private NoreenandKennethMurrayLibraryMap noreenandKennethMurrayLibry;
     private LinearLayout FloorButtons;
     private LinearLayout FloorButtonsNK;
     private Marker currentPositionMarker;
+    private BroadcastReceiver geofenceBroadcastReceiver;
 
     /**
      * Public Constructor for the class.
@@ -85,18 +101,15 @@ public class StartLocationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        zoom = 18f;
+
         // Inflate the layout for this fragment
         ((AppCompatActivity) getActivity()).getSupportActionBar().hide();  // --- useless?
         View rootView = inflater.inflate(R.layout.fragment_startlocation, container, false);
 
         //Obtain the start position from the GPS data from the SensorFusion class
         startPosition = sensorFusion.getGNSSLatitude(false);
-        //If not location found zoom the map out
-        if (startPosition[0] == 0 && startPosition[1] == 0) {
-            zoom = 1f;
-        } else {
-            zoom = 19f;
-        }
+
         // Initialize map fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment)
                 getChildFragmentManager().findFragmentById(R.id.startMap);
@@ -129,6 +142,17 @@ public class StartLocationFragment extends Fragment {
             public void onMapReady(GoogleMap googleMap) {
 
 
+                // 初始化BroadcastReceiver
+                //geofenceBroadcastReceiver = new GeofenceBroadcastReceiver();
+
+                GeofenceManager geofenceManager = new GeofenceManager(getActivity());
+                geofenceManager.registerAllGeofences();
+
+                // 注册BroadcastReceiver
+                LocalBroadcastManager.getInstance(getActivity()).registerReceiver(geofenceBroadcastReceiver,
+                        new IntentFilter("ACTION_GEOFENCE_EVENT"));
+
+
                 mMap = googleMap;
 
                 if (mMap != null) {
@@ -157,8 +181,8 @@ public class StartLocationFragment extends Fragment {
                 // 替换标记为箭头图标
                 currentPositionMarker = mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.tran)) // 使用箭头图标
-                        .icon(resizeMapIcons("tran",90,90))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.trana)) // 使用箭头图标
+                        .icon(resizeMapIcons("trana",90,90))
                         .anchor(0.5f, 0.5f) // 确保箭头是从中心点旋转
                         .flat(true)); // 确保箭头平贴在地图上旋转
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
@@ -224,10 +248,20 @@ public class StartLocationFragment extends Fragment {
     }
 
     private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){
+        // 尝试加载图标资源
         Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getActivity().getPackageName()));
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
-        return BitmapDescriptorFactory.fromBitmap(resizedBitmap);
+        if (imageBitmap != null) {
+            // 如果成功加载，进行缩放
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
+            return BitmapDescriptorFactory.fromBitmap(resizedBitmap);
+        } else {
+            // 如果图标资源加载失败，记录错误或处理异常情况
+            Log.e("StartLocationFragment", "无法加载图标资源: " + iconName);
+            // 返回null或默认图标
+            return null;
+        }
     }
+
 
 
     private void setupFloorSelectionButtons(View view) {
@@ -272,6 +306,30 @@ public class StartLocationFragment extends Fragment {
         if(currentPositionMarker != null) {
             currentPositionMarker.setRotation(newOrientation);
         }
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // 请求位置权限
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(geofenceBroadcastReceiver);
     }
 
     /**
@@ -321,26 +379,61 @@ public class StartLocationFragment extends Fragment {
                 if (sensorFusion != null) {
                     float[] currentPosition = sensorFusion.getGNSSLatitude(false);
                     LatLng userLocation = new LatLng(currentPosition[0], currentPosition[1]);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 300));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, zoom));
                 }
             }
         });
 
-        // 重置旋转按钮
-        Button resetRotationButton = view.findViewById(R.id.resetRotationButton); // 假设按钮ID为resetRotationButton
-        resetRotationButton.setOnClickListener(new View.OnClickListener() {
+
+
+        // 注册地理围栏事件接收器
+        geofenceBroadcastReceiver = new BroadcastReceiver() {
             @Override
-            public void onClick(View v) {
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(
-                        new CameraPosition.Builder()
-                                .target(mMap.getCameraPosition().target) // 保持当前位置不变
-                                .zoom(mMap.getCameraPosition().zoom) // 保持当前缩放级别不变
-                                .tilt(0) // 重置倾斜角度为0
-                                .bearing(0) // 重置旋转角度为0，即北方向朝上
-                                .build()
-                ));
+            public void onReceive(Context context, Intent intent) {
+                String geofenceId = intent.getStringExtra("GEOFENCE_ID");
+                int transitionType = intent.getIntExtra("GEOFENCE_TRANSITION_TYPE", -1);
+
+                if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
+                    if (GEOFENCE_ID_NUCLEAR.equals(geofenceId)) {
+                        // 用户进入核能大楼区域
+                        Log.d("GeofenceReceiver", "IN Nuclear building");
+                        Toast.makeText(context, "Entering the nuclear building", Toast.LENGTH_SHORT).show();
+                        FloorButtons.setVisibility(View.VISIBLE); // 显示楼层选择按钮
+                        switchFloorNU(1); // 默认显示 Ground 层，索引为0
+
+                    } else if (GEOFENCE_ID_NKLIB.equals(geofenceId)) {
+                        // 用户进入图书馆区域
+                        Log.d("GeofenceReceiver", "IN Library");
+                        Toast.makeText(context, "Entering the Library", Toast.LENGTH_SHORT).show();
+                        FloorButtonsNK.setVisibility(View.VISIBLE); // 显示楼层选择按钮
+                        switchFloorNK(0); // 默认显示 Upper Ground 层，索引为1
+
+                    }
+                } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                    if (GEOFENCE_ID_NUCLEAR.equals(geofenceId)) {
+                        // 用户离开核能大楼区域
+                        Log.d("GeofenceReceiver", "OUT Nuclear building");
+                        Toast.makeText(context, "Leaving the nuclear building", Toast.LENGTH_SHORT).show();
+                        nuclearBuildingManager.getIndoorMapManager().hideMap();
+                        FloorButtons.setVisibility(View.GONE);
+                        noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
+                        FloorButtonsNK.setVisibility(View.GONE);
+
+                    } else if (GEOFENCE_ID_NKLIB.equals(geofenceId)) {
+                        // 用户离开图书馆区域
+                        Log.d("GeofenceReceiver", "OUT Library");
+                        Toast.makeText(context, "Leaving the Library", Toast.LENGTH_SHORT).show();
+                        noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
+                        FloorButtonsNK.setVisibility(View.GONE);
+                        nuclearBuildingManager.getIndoorMapManager().hideMap();
+                        FloorButtons.setVisibility(View.GONE);
+
+                    }
+                }
             }
-        });
+        };
+
+
 
 
             // Find Switch and set up a listener
@@ -352,8 +445,10 @@ public class StartLocationFragment extends Fragment {
                     if (mMap != null) { // 使用类级别的GoogleMap引用来切换地图类型
                         if (isChecked) {
                             mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                            Log.d("Switch", "Sat");
                         } else {
                             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                            Log.d("Switch", "Nor");
                         }
                     }
                 }
