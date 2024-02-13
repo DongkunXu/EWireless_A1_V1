@@ -13,5 +13,6 @@
 /secrets.properties
 .externalNativeBuild
 .cxx
+secrets.properties
 local.properties
 /.idea/

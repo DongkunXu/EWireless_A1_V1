@@ -211,4 +211,5 @@ public class FilesFragment extends Fragment implements Observer {
         });
         filesList.setAdapter(listAdapter);
     }
+
 }

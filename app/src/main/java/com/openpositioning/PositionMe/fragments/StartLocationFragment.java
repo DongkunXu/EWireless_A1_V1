@@ -54,7 +54,9 @@ public class StartLocationFragment extends Fragment {
     private float zoom = 19f;
     private GoogleMap mMap;
     private NuclearBuildingManager nuclearBuildingManager;
+    private NoreenandKennethMurrayLibraryMap noreenandKennethMurrayLibry;
     private LinearLayout FloorButtons;
+    private LinearLayout FloorButtonsNK;
 
     /**
      * Public Constructor for the class.
@@ -105,6 +107,10 @@ public class StartLocationFragment extends Fragment {
                     // 创建 NuclearBuildingManager 实例
                     nuclearBuildingManager = new NuclearBuildingManager(mMap);
                     nuclearBuildingManager.getIndoorMapManager().hideMap();
+
+                    noreenandKennethMurrayLibry = new NoreenandKennethMurrayLibraryMap(mMap);
+                    noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
+
                 }
 
                 mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -116,79 +122,77 @@ public class StartLocationFragment extends Fragment {
 
                 // Add a marker in current GPS location and move the camera
                 position = new LatLng(startPosition[0], startPosition[1]);
-                mMap.addMarker(new MarkerOptions().position(position).title("Start Position")).setDraggable(true);
+                mMap.addMarker(new MarkerOptions().position(position).title("Start Position")).setDraggable(false);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
-                //Drag listener for the marker to execute when the markers location is changed
-                mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-                    /**
-                     * {@inheritDoc}
-                     */
-                    @Override
-                    public void onMarkerDragStart(Marker marker) {
-                    }
 
-                    /**
-                     * {@inheritDoc}
-                     * Updates the start position of the user.
-                     */
-                    @Override
-                    public void onMarkerDragEnd(Marker marker) {
-                        startPosition[0] = (float) marker.getPosition().latitude;
-                        startPosition[1] = (float) marker.getPosition().longitude;
-                    }
 
-                    /**
-                     * {@inheritDoc}
-                     */
-                    @Override
-                    public void onMarkerDrag(Marker marker) {
-                    }
-                });
+                LatLngBounds NuclearBuildingBounds = new LatLngBounds(
+                        new LatLng(55.92279, -3.174643), // 平面图对应的南西角坐标
+                        new LatLng(55.92335, -3.173829)  // 平面图对应的东北角坐标
+                );
 
-                LatLngBounds buildingBounds = new LatLngBounds(
-                        new LatLng(55.922720, -3.174631), // 平面图对应的南西角坐标
-                        new LatLng(55.923406, -3.173832)  // 平面图对应的东北角坐标
+                LatLngBounds NoreenKennethBounds = new LatLngBounds(
+                        new LatLng(55.92281, -3.175171), // 平面图对应的南西角坐标
+                        new LatLng(55.923065, -3.174747)  // 平面图对应的东北角坐标
                 );
 
                 mMap.setOnMapClickListener(latLng -> {
-                    if (buildingBounds.contains(latLng)) {
+                    if (NuclearBuildingBounds.contains(latLng)) {
+                        noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
+                        FloorButtonsNK.setVisibility(View.GONE);
                         FloorButtons.setVisibility(View.VISIBLE); // 显示楼层选择按钮
-                        switchFloor(1); // 默认显示 Upper Ground 层，索引为1
-                    } else {
+                        switchFloorNU(1); // 默认显示 Upper Ground 层，索引为1
+                    }
+                    else if (NoreenKennethBounds.contains(latLng)) {
+                        nuclearBuildingManager.getIndoorMapManager().hideMap();
+                        FloorButtons.setVisibility(View.GONE);
+                        FloorButtonsNK.setVisibility(View.VISIBLE); // 显示楼层选择按钮
+                        switchFloorNK(0); // 默认显示 Ground 层，索引为0
+                    }
+                    else {
                         //FloorButtons.setVisibility(View.GONE); // 点击区域外隐藏楼层选择按钮
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
                         FloorButtons.setVisibility(View.GONE);
+                        noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
+                        FloorButtonsNK.setVisibility(View.GONE);
                     }
                 });
-
             }
         });
-
-        // Floor button initialization
-        //setupFloorButtons(rootView);
-
         return rootView;
     }
 
 
     private void setupFloorSelectionButtons(View view) {
-        LinearLayout FloorButtons = view.findViewById(R.id.FloorButtons);
+        //LinearLayout FloorButtons = view.findViewById(R.id.FloorButtons);
 
         // 为每个按钮设置点击监听器
-        view.findViewById(R.id.floor_lowground).setOnClickListener(v -> switchFloor(0));
-        view.findViewById(R.id.floor_upground).setOnClickListener(v -> switchFloor(1));
-        view.findViewById(R.id.floor_1).setOnClickListener(v -> switchFloor(2));
-        view.findViewById(R.id.floor_2).setOnClickListener(v -> switchFloor(3));
-        view.findViewById(R.id.floor_3).setOnClickListener(v -> switchFloor(4));
-
-        // 设置地图点击监听器，当点击地图时隐藏楼层按钮
-        //mMap.setOnMapClickListener(latLng -> FloorButtons.setVisibility(View.GONE));
+        view.findViewById(R.id.floor_lowground).setOnClickListener(v -> switchFloorNU(0));
+        view.findViewById(R.id.floor_upground).setOnClickListener(v -> switchFloorNU(1));
+        view.findViewById(R.id.floor_1).setOnClickListener(v -> switchFloorNU(2));
+        view.findViewById(R.id.floor_2).setOnClickListener(v -> switchFloorNU(3));
+        view.findViewById(R.id.floor_3).setOnClickListener(v -> switchFloorNU(4));
     }
 
-    private void switchFloor(int floorIndex) {
+    private void setupFloorSelectionButtonsNK(View view) {
+        //LinearLayout FloorButtonsNK = view.findViewById(R.id.FloorButtonsNK);
+
+        view.findViewById(R.id.floor_ground).setOnClickListener(v -> switchFloorNK(0));
+        view.findViewById(R.id.floor_one).setOnClickListener(v -> switchFloorNK(1));
+        view.findViewById(R.id.floor_two).setOnClickListener(v -> switchFloorNK(2));
+        view.findViewById(R.id.floor_three).setOnClickListener(v -> switchFloorNK(3));
+    }
+
+    private void switchFloorNU(int floorIndex) {
         if (nuclearBuildingManager != null) {
             nuclearBuildingManager.getIndoorMapManager().switchFloor(floorIndex);
+        }
+    }
+
+    private void switchFloorNK(int floorIndex) {
+        if (noreenandKennethMurrayLibry != null) {
+            noreenandKennethMurrayLibry.getIndoorMapManager().switchFloor(floorIndex);
         }
     }
 
@@ -205,8 +209,10 @@ public class StartLocationFragment extends Fragment {
 
         // 楼层按钮初始化
         FloorButtons = view.findViewById(R.id.FloorButtons); // 确保你的布局文件中有这个ID
+        FloorButtonsNK = view.findViewById(R.id.FloorButtonsNK);
 
         setupFloorSelectionButtons(view); // 初始化楼层选择按钮
+        setupFloorSelectionButtonsNK(view);
 
 
         // Add button to begin PDR recording and go to recording fragment.
