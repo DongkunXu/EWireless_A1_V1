@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Build;
 import android.os.PowerManager;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -364,6 +365,7 @@ public class SensorFusion implements SensorEventListener, Observer {
 
                 if(sensorUpdateCallback != null){
                     sensorUpdateCallback.onOrientationChanged(newOrientation );
+                    Log.d("SensorFusion", "Orientation changed: " + newOrientation);
                 }
                 break;
 

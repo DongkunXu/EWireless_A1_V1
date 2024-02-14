@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.openpositioning.PositionMe.R;
 import com.openpositioning.PositionMe.sensors.SensorFusion;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -52,6 +55,8 @@ import android.content.Intent;
 
 import android.content.BroadcastReceiver;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 
 /**
@@ -85,6 +90,14 @@ public class StartLocationFragment extends Fragment {
     private LinearLayout FloorButtonsNK;
     private Marker currentPositionMarker;
     private BroadcastReceiver geofenceBroadcastReceiver;
+    private PdrTracker pdrTracker;
+    private boolean isRecording = false; // 记录状态
+    private ArrayList<LatLng> pathPoints; // 轨迹点
+    private MarkerOptions markerOptions; // 初始位置标记
+    private PolylineOptions polylineOptions; // 轨迹绘制选项
+    private Polyline currentPolyline; // 当前绘制的轨迹
+
+
 
     /**
      * Public Constructor for the class.
@@ -104,7 +117,7 @@ public class StartLocationFragment extends Fragment {
         zoom = 18f;
 
         // Inflate the layout for this fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();  // --- useless?
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         View rootView = inflater.inflate(R.layout.fragment_startlocation, container, false);
 
         //Obtain the start position from the GPS data from the SensorFusion class
@@ -114,20 +127,32 @@ public class StartLocationFragment extends Fragment {
         SupportMapFragment supportMapFragment = (SupportMapFragment)
                 getChildFragmentManager().findFragmentById(R.id.startMap);
 
-        // 设置SensorFusion回调
+        // 设置SensorFusion回调 ---------------------------------------------------------------------------------- SensorFusion >>>
         sensorFusion.setSensorUpdateCallback(new SensorFusion.SensorUpdateCallback() {
             @Override
             public void onLocationChanged(LatLng newPosition) {
                 // 更新箭头的位置
+                Log.d("SensorFusionCallback", "onLocationChanged: " + newPosition);
                 updatePosition(newPosition);
             }
 
             @Override
             public void onOrientationChanged(float newOrientation) {
-                // 更新箭头的方向
-                updateOrientation(newOrientation);
+                Log.d("SensorFusionCallback", "Trying to update orientation to: " + newOrientation);
+                try {
+                    if (currentPositionMarker != null) {
+                        currentPositionMarker.setRotation(newOrientation);
+                        Log.d("SensorFusionCallback", "Orientation updated successfully.");
+                    } else {
+                        Log.d("SensorFusionCallback", "currentPositionMarker is null.");
+                    }
+                } catch (Exception e) {
+                    Log.e("SensorFusionCallback", "Error updating orientation: ", e);
+                }
             }
         });
+        // 设置SensorFusion回调 ---------------------------------------------------------------------------------- SensorFusion <<<
+
 
         // Asynchronous map which can be configured
         supportMapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -141,9 +166,8 @@ public class StartLocationFragment extends Fragment {
             @Override
             public void onMapReady(GoogleMap googleMap) {
 
-
-                // 初始化BroadcastReceiver
-                //geofenceBroadcastReceiver = new GeofenceBroadcastReceiver();
+                // 初始化PdrTracker
+                //pdrTracker = new PdrTracker(getActivity(), googleMap); //------------------------------Pdr
 
                 GeofenceManager geofenceManager = new GeofenceManager(getActivity());
                 geofenceManager.registerAllGeofences();
@@ -152,8 +176,9 @@ public class StartLocationFragment extends Fragment {
                 LocalBroadcastManager.getInstance(getActivity()).registerReceiver(geofenceBroadcastReceiver,
                         new IntentFilter("ACTION_GEOFENCE_EVENT"));
 
-
                 mMap = googleMap;
+                pathPoints = new ArrayList<>();
+                markerOptions = new MarkerOptions();
 
                 if (mMap != null) {
                     // 创建 NuclearBuildingManager 实例
@@ -162,7 +187,6 @@ public class StartLocationFragment extends Fragment {
 
                     noreenandKennethMurrayLibry = new NoreenandKennethMurrayLibraryMap(mMap);
                     noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
-
                 }
 
                 mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -170,12 +194,6 @@ public class StartLocationFragment extends Fragment {
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
                 mMap.getUiSettings().setScrollGesturesEnabled(true);
-
-
-                // Add a marker in current GPS location and move the camera
-                //position = new LatLng(startPosition[0], startPosition[1]);
-                //mMap.addMarker(new MarkerOptions().position(position).title("Start Position")).setDraggable(false);
-                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
                 position = new LatLng(startPosition[0], startPosition[1]);
                 // 替换标记为箭头图标
@@ -188,8 +206,6 @@ public class StartLocationFragment extends Fragment {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
 
-
-
                 LatLngBounds NuclearBuildingBounds = new LatLngBounds(
                         new LatLng(55.92279, -3.174643), // 平面图对应的南西角坐标
                         new LatLng(55.92335, -3.173829)  // 平面图对应的东北角坐标
@@ -199,6 +215,7 @@ public class StartLocationFragment extends Fragment {
                         new LatLng(55.92281, -3.175171), // 平面图对应的南西角坐标
                         new LatLng(55.923065, -3.174747)  // 平面图对应的东北角坐标
                 );
+
 
                 mMap.setOnMapClickListener(latLng -> {
                     if (NuclearBuildingBounds.contains(latLng)) {
@@ -226,28 +243,7 @@ public class StartLocationFragment extends Fragment {
         return rootView;
     }
 
-    public void updatePositionAndOrientation(LatLng newPosition, float newOrientation) {
-        if (currentPositionMarker != null) {
-            currentPositionMarker.setPosition(newPosition); // 更新位置
-            currentPositionMarker.setRotation(newOrientation); // 根据orientation更新箭头方向
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // 确保在这里注册传感器监听器来更新位置
-        sensorFusion.resumeListening();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // 确保在这里注销传感器监听器来停止更新位置
-        sensorFusion.stopListening();
-    }
-
-    private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){
+    private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){  //  将定位换成箭头图标
         // 尝试加载图标资源
         Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getActivity().getPackageName()));
         if (imageBitmap != null) {
@@ -262,75 +258,31 @@ public class StartLocationFragment extends Fragment {
         }
     }
 
-
-
-    private void setupFloorSelectionButtons(View view) {
-        //LinearLayout FloorButtons = view.findViewById(R.id.FloorButtons);
-
-        // 为每个按钮设置点击监听器
-        view.findViewById(R.id.floor_lowground).setOnClickListener(v -> switchFloorNU(0));
-        view.findViewById(R.id.floor_upground).setOnClickListener(v -> switchFloorNU(1));
-        view.findViewById(R.id.floor_1).setOnClickListener(v -> switchFloorNU(2));
-        view.findViewById(R.id.floor_2).setOnClickListener(v -> switchFloorNU(3));
-        view.findViewById(R.id.floor_3).setOnClickListener(v -> switchFloorNU(4));
-    }
-
-    private void setupFloorSelectionButtonsNK(View view) {
-        //LinearLayout FloorButtonsNK = view.findViewById(R.id.FloorButtonsNK);
-
-        view.findViewById(R.id.floor_ground).setOnClickListener(v -> switchFloorNK(0));
-        view.findViewById(R.id.floor_one).setOnClickListener(v -> switchFloorNK(1));
-        view.findViewById(R.id.floor_two).setOnClickListener(v -> switchFloorNK(2));
-        view.findViewById(R.id.floor_three).setOnClickListener(v -> switchFloorNK(3));
-    }
-
-    private void switchFloorNU(int floorIndex) {
-        if (nuclearBuildingManager != null) {
-            nuclearBuildingManager.getIndoorMapManager().switchFloor(floorIndex);
-        }
-    }
-
-    private void switchFloorNK(int floorIndex) {
-        if (noreenandKennethMurrayLibry != null) {
-            noreenandKennethMurrayLibry.getIndoorMapManager().switchFloor(floorIndex);
-        }
-    }
-
+    // 更新位置和轨迹的方法 ----------------------------------------------------------------------Update Marker? >>>
     private void updatePosition(LatLng newPosition) {
-        if(currentPositionMarker != null) {
+
+        currentPositionMarker.setPosition(newPosition);
+        Log.e("StartLocationFragment", "updatePosition" + newPosition);
+
+        if(isRecording) {
+            pathPoints.add(newPosition);
+            refreshMap();
+            if (currentPositionMarker != null) {
+                currentPositionMarker.setPosition(newPosition);
+            }
+        }
+        if (currentPositionMarker != null) {
             currentPositionMarker.setPosition(newPosition);
         }
     }
 
-    private void updateOrientation(float newOrientation) {
-        if(currentPositionMarker != null) {
-            currentPositionMarker.setRotation(newOrientation);
-        }
-    }
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-
-
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // 请求位置权限
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
+    // 刷新地图，重新绘制轨迹
+    private void refreshMap() {
+        if(currentPolyline != null) currentPolyline.remove(); // 清除现有轨迹
+        currentPolyline = mMap.addPolyline(polylineOptions.addAll(pathPoints));
 
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(geofenceBroadcastReceiver);
-    }
+    // -----------------------------------------------------------------------------------------Update Marker? <<<
 
     /**
      * {@inheritDoc}
@@ -342,34 +294,12 @@ public class StartLocationFragment extends Fragment {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.startMap);
         //mapFragment.getMapAsync(this);
 
-
         // 楼层按钮初始化
         FloorButtons = view.findViewById(R.id.FloorButtons); // 确保你的布局文件中有这个ID
         FloorButtonsNK = view.findViewById(R.id.FloorButtonsNK);
 
         setupFloorSelectionButtons(view); // 初始化楼层选择按钮
         setupFloorSelectionButtonsNK(view);
-
-
-        // Add button to begin PDR recording and go to recording fragment.
-        this.button = (Button) getView().findViewById(R.id.startLocationDone);
-        this.button.setOnClickListener(new View.OnClickListener() {
-            /**
-             * {@inheritDoc}
-             * When button clicked the PDR recording can start and the start position is stored for
-             * the {@link CorrectionFragment} to display. The {@link RecordingFragment} is loaded.
-             */
-            @Override
-            public void onClick(View view) {
-                // Starts recording data from the sensor fusion
-                sensorFusion.startRecording();
-                // Set the start location obtained
-                sensorFusion.setStartGNSSLatitude(startPosition);
-                // Navigate to the RecordingFragment
-                NavDirections action = StartLocationFragmentDirections.actionStartLocationFragmentToRecordingFragment();
-                Navigation.findNavController(view).navigate(action);
-            }
-        });
 
         // 定位按钮
         Button locateButton = view.findViewById(R.id.locateButton); // 假设按钮ID为locateButton
@@ -384,7 +314,24 @@ public class StartLocationFragment extends Fragment {
             }
         });
 
-
+        // 初始化记录按钮
+        Button Rec = view.findViewById(R.id.Rec);
+        Rec.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isRecording) {
+                    // 停止记录
+                    isRecording = false;
+                    Rec.setText(">"); // 将按钮文本设置为“开始”
+                    // 停止PdrTracker的轨迹记录的逻辑
+                } else {
+                    // 开始记录
+                    isRecording = true;
+                    Rec.setText("||"); // 将按钮文本设置为“停止”
+                    // 开始PdrTracker的轨迹记录的逻辑
+                }
+            }
+        });
 
         // 注册地理围栏事件接收器
         geofenceBroadcastReceiver = new BroadcastReceiver() {
@@ -407,7 +354,6 @@ public class StartLocationFragment extends Fragment {
                         Toast.makeText(context, "Entering the Library", Toast.LENGTH_SHORT).show();
                         FloorButtonsNK.setVisibility(View.VISIBLE); // 显示楼层选择按钮
                         switchFloorNK(0); // 默认显示 Upper Ground 层，索引为1
-
                     }
                 } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                     if (GEOFENCE_ID_NUCLEAR.equals(geofenceId)) {
@@ -433,9 +379,6 @@ public class StartLocationFragment extends Fragment {
             }
         };
 
-
-
-
             // Find Switch and set up a listener
         Switch mapTypeSwitch = view.findViewById(R.id.switch_map_type);
         if (mapTypeSwitch != null) {
@@ -454,5 +397,64 @@ public class StartLocationFragment extends Fragment {
                 }
             });
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e("SensorFusionCallback", "Sensor Resume");
+        // 确保在这里注册传感器监听器来更新位置
+        sensorFusion.resumeListening();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.e("SensorFusionCallback", "Sensor Stop");
+        // 确保在这里注销传感器监听器来停止更新位置
+        sensorFusion.stopListening();
+    }
+
+    private void setupFloorSelectionButtons(View view) {
+        // 为每个按钮设置点击监听器
+        view.findViewById(R.id.floor_lowground).setOnClickListener(v -> switchFloorNU(0));
+        view.findViewById(R.id.floor_upground).setOnClickListener(v -> switchFloorNU(1));
+        view.findViewById(R.id.floor_1).setOnClickListener(v -> switchFloorNU(2));
+        view.findViewById(R.id.floor_2).setOnClickListener(v -> switchFloorNU(3));
+        view.findViewById(R.id.floor_3).setOnClickListener(v -> switchFloorNU(4));
+    }
+    private void setupFloorSelectionButtonsNK(View view) {
+        view.findViewById(R.id.floor_ground).setOnClickListener(v -> switchFloorNK(0));
+        view.findViewById(R.id.floor_one).setOnClickListener(v -> switchFloorNK(1));
+        view.findViewById(R.id.floor_two).setOnClickListener(v -> switchFloorNK(2));
+        view.findViewById(R.id.floor_three).setOnClickListener(v -> switchFloorNK(3));
+    }
+
+    private void switchFloorNU(int floorIndex) {
+        if (nuclearBuildingManager != null) {
+            nuclearBuildingManager.getIndoorMapManager().switchFloor(floorIndex);
+        }
+    }
+    private void switchFloorNK(int floorIndex) {
+        if (noreenandKennethMurrayLibry != null) {
+            noreenandKennethMurrayLibry.getIndoorMapManager().switchFloor(floorIndex);
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // 请求位置权限
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(geofenceBroadcastReceiver);
     }
 }
