@@ -94,7 +94,8 @@ public class StartLocationFragment extends Fragment {
     private boolean isRecording = false; // 记录状态
     private ArrayList<LatLng> pathPoints; // 轨迹点
     private MarkerOptions markerOptions; // 初始位置标记
-    private PolylineOptions polylineOptions; // 轨迹绘制选项
+    private PolylineOptions polylineOptions = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+
     private Polyline currentPolyline; // 当前绘制的轨迹
 
 
@@ -278,8 +279,22 @@ public class StartLocationFragment extends Fragment {
 
     // 刷新地图，重新绘制轨迹
     private void refreshMap() {
-        if(currentPolyline != null) currentPolyline.remove(); // 清除现有轨迹
-        currentPolyline = mMap.addPolyline(polylineOptions.addAll(pathPoints));
+
+        //pdrTracker.drawPath
+
+        int Yellow = Color.argb(255, 245, 245, 0); // 参数分别代表透明度，红色，绿色，蓝色分量
+
+        if (currentPolyline != null) {
+            currentPolyline.remove(); // 移除之前的轨迹以避免重叠
+        }
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(pathPoints)
+                .width(5)
+                .color(Yellow);
+        currentPolyline = mMap.addPolyline(polylineOptions); // 使用最新的轨迹点列表绘制轨迹
+
+        //if(currentPolyline != null) currentPolyline.remove(); // 清除现有轨迹
+        //currentPolyline = mMap.addPolyline(polylineOptions.addAll(pathPoints));
 
     }
     // -----------------------------------------------------------------------------------------Update Marker? <<<

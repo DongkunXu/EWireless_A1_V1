@@ -1,9 +1,14 @@
 package com.openpositioning.PositionMe.fragments;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -18,6 +23,8 @@ public class GeofenceManager {
     private Context context;
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
+    private static final int REQUEST_CODE = 1; // 或者任何其他未使用的整数
+
 
     public GeofenceManager(Context context) {
         this.context = context;
@@ -41,9 +48,17 @@ public class GeofenceManager {
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                 .build();
 
-        geofencingClient.addGeofences(getGeofencingRequest(geofence), getGeofencePendingIntent())
-                .addOnSuccessListener(aVoid -> Log.d("GeofenceManager", "地理围栏注册成功: " + geofenceId))
-                .addOnFailureListener(e -> Log.e("GeofenceManager", "地理围栏注册失败: " + geofenceId, e));
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // 已有权限，可以添加地理围栏
+            geofencingClient.addGeofences(getGeofencingRequest(geofence), getGeofencePendingIntent())
+                    .addOnSuccessListener(aVoid -> Log.d("GeofenceManager", "地理围栏注册成功: " + geofenceId))
+                    .addOnFailureListener(e -> Log.e("GeofenceManager", "地理围栏注册失败: " + geofenceId, e));
+        } else {
+            // 没有权限，需要请求权限
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+        }
+
     }
 
     private GeofencingRequest getGeofencingRequest(Geofence geofence) {
