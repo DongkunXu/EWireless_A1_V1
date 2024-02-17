@@ -21,3 +21,6 @@ Under Development
 ### Fixed
 :hammer: Using Gradle version 7.2. Fixed the bug that the plugin version is not supported.
 
+
+## The updated log will appear in the README file, please go to the README to view it.
+
