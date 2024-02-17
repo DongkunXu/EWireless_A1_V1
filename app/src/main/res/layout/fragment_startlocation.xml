@@ -75,7 +75,7 @@
                 android:textSize="30dp"
                 android:paddingBottom="10dp"
                 android:paddingTop="1dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/locateButton"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <Button
@@ -89,7 +89,7 @@
                 android:gravity="center"
                 android:padding="12dp"
                 android:textColor="@color/white"
-                app:layout_constraintBottom_toTopOf="@+id/Rec"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <Button

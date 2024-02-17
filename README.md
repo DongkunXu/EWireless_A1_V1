@@ -114,7 +114,7 @@ Under Development
 :hammer: The bug that the trajectory drawn by PDR is a straight line has been fixed.<br>
 
 
-## [V0.2.0 - "PDR"] - 2024-02-16
+## [V0.2.0 - "First deliverable"] - 2024-02-16
 First deliverable :white_check_mark: 
 
 ### Added
