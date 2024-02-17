@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -254,7 +255,7 @@ public class StartLocationFragment extends Fragment {
         //Initialize the switch and set up the listener
         geoOrNotSwitch = rootView.findViewById(R.id.geoOrNotSwitch);
         geoOrNotSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            buttonView.setText(isChecked ? "LLJ" : "GF");
+            buttonView.setText(isChecked ? "  LLJ" : "  GF");
         });
 
         // Asynchronous map which can be configured
@@ -456,7 +457,7 @@ public class StartLocationFragment extends Fragment {
             mapTypeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    buttonView.setText(isChecked ? "HYBRID" : "NORMAL");
+                    buttonView.setText(isChecked ? "  HYBRID" : "  NORMAL");
                     if (mMap != null) {
                         if (isChecked) {
                             mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);

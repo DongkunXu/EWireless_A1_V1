@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,9 @@ import androidx.preference.PreferenceManager;
 
 import com.openpositioning.PositionMe.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.Calendar;
+
 
 /**
  * A simple {@link Fragment} subclass. The home fragment is the start screen of the application.
@@ -73,6 +77,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        greetBasedOnTime();
 
         // Button to navigate to Sensor Info display fragment
         this.goToInfo = getView().findViewById(R.id.sensorInfoButton);
@@ -135,4 +141,23 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
+    public void greetBasedOnTime() {
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        String greeting;
+
+        if (hour >= 6 && hour < 12) {
+            greeting = "Good morning \u2600";
+        } else if (hour >= 12 && hour < 18) {
+            greeting = "Good afternoon \u2615";
+        } else {
+            greeting = "Good evening \u263D";
+        }
+
+        Toast.makeText(getActivity(), greeting, Toast.LENGTH_SHORT).show();
+
+    }
+
+
 }

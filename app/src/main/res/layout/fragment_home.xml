@@ -10,19 +10,34 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        >
+
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/roundback"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/sensorInfoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="16dp"
             android:clickable="true"
             android:contentDescription="@string/info_description"
             android:src="@drawable/ic_baseline_info_24"
             app:backgroundTint="?attr/colorPrimaryVariant"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:tint="@color/white" />
 
@@ -34,17 +49,17 @@
             android:layout_marginBottom="24dp"
             android:background="@drawable/round_button"
             android:enabled="false"
-            android:paddingStart="15dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="10dp"
-            android:paddingEnd="10dp"
+            android:paddingStart="0dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="0dp"
+            android:paddingBottom="0dp"
             android:text="@string/start"
             android:textColor="@color/LightYellow"
-            android:textSize="18dp"
+            android:textSize="20dp"
             android:textStyle="bold"
-            app:icon="@drawable/ic_baseline_directions_walk_24"
+            app:icon="@drawable/info"
             app:iconGravity="textTop"
-            app:iconSize="170dp"
+            app:iconSize="200dp"
             app:layout_constraintBottom_toTopOf="@+id/otherButtonLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -54,8 +69,8 @@
             android:id="@+id/otherButtonLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -63,32 +78,36 @@
 
             <Button
                 android:id="@+id/measurementButton"
-                android:layout_width="165dp"
-                android:layout_height="150dp"
-                android:layout_marginEnd="12dp"
+                android:layout_width="167dp"
+                android:layout_height="167dp"
                 android:layout_marginTop="6dp"
+                android:layout_marginEnd="12dp"
                 android:layout_marginBottom="6dp"
-                android:background="@drawable/rounded_corner"
+                android:background="@drawable/round_button"
                 android:scaleType="centerCrop"
-                android:text="@string/measurements"
-                app:icon="@drawable/ic_baseline_data_array_24"
+                android:text="sensor"
+                android:paddingTop="0dp"
+                app:icon="@drawable/live"
                 app:iconGravity="textTop"
-                app:iconSize="50dp" />
+                app:iconSize="85dp" />
 
             <Button
                 android:id="@+id/filesButton"
-                android:layout_width="165dp"
-                android:layout_height="150dp"
+                android:layout_width="167dp"
+                android:layout_height="167dp"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
-                android:background="@drawable/rounded_corner"
+                android:background="@drawable/round_button"
                 android:scaleType="centerCrop"
                 android:text="@string/files"
-                app:icon="@drawable/ic_baseline_folder_24"
+                android:paddingTop="0dp"
+                app:icon="@drawable/file"
                 app:iconGravity="textTop"
-                app:iconSize="50dp" />
+                app:iconSize="90dp" />
+
         </LinearLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
