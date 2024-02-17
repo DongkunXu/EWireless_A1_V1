@@ -8,9 +8,7 @@ Require: :heavy_check_mark: Android Studio 4.2 or later :heavy_check_mark: Andro
 ****
 # Changelog
 
-This file records every software update and development process.
-
-====
+records software update and development process.
 
 ## [V0.1.1 - "Try_Make_It_Work"] - 2024-02-11
 Under Development
