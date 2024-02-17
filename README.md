@@ -88,7 +88,7 @@ Under Development
 
 ### Added
 :sparkles: PDR data is used to replace the original position path data from the satellite.<br>
-:sparkles: The ability to draw movement paths in real time using PDR data has been added..<br>
+:sparkles: The ability to draw movement paths in real time using PDR data has been added.<br>
 
 ### Changed
 :recycle: The startRecording page is hidden. <br>
@@ -121,8 +121,7 @@ Under Development
 First deliverable :white_check_mark: 
 
 ### Added
-:sparkles: PDR data is used to replace the original position path data from the satellite.<br>
-:sparkles: The ability to draw movement paths in real time using PDR data has been added..<br>
+:sparkles: Updated new UI interface.<br>
 
 ### Changed
 :recycle: Update image resources. <br>
