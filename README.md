@@ -1,9 +1,9 @@
 ## PositionMe :earth_americas: :earth_africa: :earth_asia:
-Indoor poistioning data collection application created for the :school_satchel: University of Edinburgh's Embedded Wireless course. 
-Original contributors: Virginia Cangelosi (virginia-cangelosi), Michal Dvorak (dvoramicha) and Mate Stodulka (stodimp), New contributors: Francisco Zampella (fzampella-huawei)
-Modification and maintenance of the current version: SteveXu
+Indoor poistioning data collection application created for the :school_satchel: University of Edinburgh's Embedded Wireless course. <br>
+Original contributors: Virginia Cangelosi (virginia-cangelosi), Michal Dvorak (dvoramicha) and Mate Stodulka (stodimp), New contributors: Francisco Zampella (fzampella-huawei)<br>
+:recycle: Modification and maintenance of the current version: SteveXu
 
-Require: :white_check_mark: Android Studio 4.2 or later :white_check_mark: Android SDK 30 or later
+Require: :heavy_check_mark: Android Studio 4.2 or later :heavy_check_mark: Android SDK 30 or later
 
 ****
 # Changelog
