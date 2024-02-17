@@ -3,6 +3,7 @@ package com.openpositioning.PositionMe;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -68,6 +69,7 @@ public class PdrProcessing {
     // Step sum and length aggregation variables
     private float sumStepLength = 0;
     private int stepCount = 0;
+
     //endregion
 
     /**
@@ -93,7 +95,7 @@ public class PdrProcessing {
         }
         else {
             // Using estimated step length - set to zero
-            this.stepLength = 0;
+            this.stepLength = 0;;
         }
 
         // Initial position and elevation - starts from zero
@@ -161,6 +163,15 @@ public class PdrProcessing {
         this.positionX += x;
         this.positionY += y;
 
+        // -------------------------------Added------------------------------------------------<<<
+
+        Log.d("PDR_Position_Update", "Current Position X: " + this.positionX + ", Y: " + this.positionY);
+        // Log the original and adapted heading values
+        Log.d("PDR_Position_Update", "Original Heading (rad): " + headingRad + ", Adapted Heading (rad): " + adaptedHeading);
+
+
+        // -------------------------------Added------------------------------------------------<<<
+
         // return current position
         return new float[]{this.positionX, this.positionY};
     }
@@ -191,6 +202,9 @@ public class PdrProcessing {
             this.elevation = absoluteElevation - startElevation;
             // Add to buffer
             this.elevationList.putNewest(absoluteElevation);
+
+            // -------------------------------Added------------------------------------------------<<<
+            // -------------------------------Added------------------------------------------------<<<
 
             // Check if there was floor movement
             // Check if there is enough data to evaluate
@@ -381,5 +395,9 @@ public class PdrProcessing {
         //Return average step length
         return averageStepLength;
     }
+
+    // -------------------------------Added------------------------------------------------<<<
+    // -------------------------------Added------------------------------------------------<<<
+
 
 }

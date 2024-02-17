@@ -136,6 +136,7 @@ public class SensorFusion implements SensorEventListener, Observer {
     private PdrProcessing pdrProcessing;
 
     private LatLng currentLatLng;
+    private LatLng pdrPosition;
     private float currentBearing;
 
     // Trajectory displaying class
@@ -180,6 +181,7 @@ public class SensorFusion implements SensorEventListener, Observer {
     public interface SensorUpdateCallback {
         void onLocationChanged(LatLng newPosition);
         void onOrientationChanged(float newOrientation);
+        void onLocationPDRChanged(float[] newPDRPosition);
     }
 
     private SensorUpdateCallback sensorUpdateCallback;
@@ -359,6 +361,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                 float[] orientationAngles = new float[3];
                 SensorManager.getOrientation(rotationMatrix, orientationAngles);
 
+                orientation = orientationAngles;
                 // Convert radians to degrees and normalize the angle
                 float newOrientation = (float) Math.toDegrees(orientationAngles[0]);
                 newOrientation = (newOrientation + 360) % 360;
@@ -369,12 +372,13 @@ public class SensorFusion implements SensorEventListener, Observer {
                 }
                 break;
 
-            // --------------------------------------- My Code ------------------------------------------------ //
+
 
             case Sensor.TYPE_STEP_DETECTOR:
                 //Store time of step
                 long stepTime = android.os.SystemClock.uptimeMillis() - bootTime;
                 float[] newCords = this.pdrProcessing.updatePdr(stepTime, this.accelMagnitude, this.orientation[0]);
+                //pdrPosition = new LatLng(newCords[0], newCords[1]);
                 if (saveRecording) {
                     // Store the PDR coordinates for plotting the trajectory
                     this.pathView.drawTrajectory(newCords);
@@ -387,9 +391,12 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setX(newCords[0]).setY(newCords[1]));
                 }
 
+                if (sensorUpdateCallback != null) {
+                    sensorUpdateCallback.onLocationPDRChanged(newCords);
+                }
 
                 break;
-        }
+        }   // --------------------------------------- My Code ------------------------------------------------ //
     }
 
     /**

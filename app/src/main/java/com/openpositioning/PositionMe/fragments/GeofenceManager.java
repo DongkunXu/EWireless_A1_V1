@@ -33,9 +33,9 @@ public class GeofenceManager {
 
     public void registerAllGeofences() {
         // 为核能大楼注册地理围栏
-        registerGeofence(GEOFENCE_ID_NUCLEAR, new LatLng(55.923055, -3.174247), 80);
+        registerGeofence(GEOFENCE_ID_NUCLEAR, new LatLng(55.923055, -3.174247), 150);
         // 为诺琳和肯尼斯·默里图书馆注册地理围栏
-        registerGeofence(GEOFENCE_ID_NKLIB, new LatLng(55.922904, -3.174967), 40);
+        registerGeofence(GEOFENCE_ID_NKLIB, new LatLng(55.922904, -3.174967), 50);
     }
 
     private void registerGeofence(String geofenceId, LatLng center, float radius) {
