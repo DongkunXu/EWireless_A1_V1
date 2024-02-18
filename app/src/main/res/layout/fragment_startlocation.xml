@@ -67,14 +67,14 @@
                 android:id="@+id/Rec"
                 android:layout_width="59dp"
                 android:layout_height="59dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="15dp"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/round_button"
                 android:textColor="#FFFFFF"
                 android:text=">"
                 android:textSize="30dp"
                 android:paddingBottom="10dp"
-                android:paddingTop="1dp"
+                android:paddingTop="2dp"
                 app:layout_constraintBottom_toTopOf="@+id/locateButton"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -82,7 +82,7 @@
                 android:id="@+id/locateButton"
                 android:layout_width="59dp"
                 android:layout_height="59dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="15dp"
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/round_button"
                 android:drawableTop="@drawable/ic_baseline_location_searching_24"
@@ -92,42 +92,28 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <Button
-                android:id="@+id/resetRotationButton"
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="12dp"
-                android:background="@color/black"
-                android:text="+"
-                android:textColor="#FFFFFF"
-                android:textSize="26sp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@+id/locateButton"
-                app:layout_constraintEnd_toEndOf="parent" />
-
 
             <Switch
                 android:id="@+id/switch_map_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="16dp"
                 android:background="@drawable/rounded_corner"
                 android:checked="false"
                 android:text="  Map Type"
                 android:textColor="#CFCFCF"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardView2" />
+                app:layout_constraintTop_toBottomOf="@+id/Accuracy" />
 
             <Switch
                 android:id="@+id/geoOrNotSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginEnd="8dp"
-                android:checked="false"
+                android:layout_marginEnd="16dp"
                 android:background="@drawable/rounded_corner"
+                android:checked="false"
                 android:text="  Trig type"
                 android:textColor="#CFCFCF"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -213,6 +199,29 @@
                     android:layout_height="wrap_content"
                     android:text="F3" />
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/RedDot"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginBottom="71dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/ic_baseline_red_dot_24" />
+
+            <TextView
+                android:id="@+id/Accuracy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/rounded_corner"
+                android:padding="3dp"
+                android:text="  Accuracy: Calculating...  "
+                android:textColor="#CFCFCF"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
      */
     private void askStoragePermission() {
         // Check for storage permission
-        int writeStoragePermission = ActivityCompat.checkSelfPermission(this,
+        /*int writeStoragePermission = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
         int readStoragePermission = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -285,8 +285,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
         else {
             // Check other permissions if present
-            askMotionPermissions();
-        }
+            }*/
+        askMotionPermissions();
     }
 
     /**

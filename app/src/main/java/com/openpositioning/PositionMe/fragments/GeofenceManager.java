@@ -73,7 +73,12 @@ public class GeofenceManager {
             return geofencePendingIntent;
         }
         Intent intent = new Intent(context, GeofenceBroadcastReceiver.class);
-        geofencePendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        // Check the Android version before setting flags
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            flags |= PendingIntent.FLAG_IMMUTABLE; // Use FLAG_MUTABLE if needed
+        }
+        geofencePendingIntent = PendingIntent.getBroadcast(context, 0, intent, flags);
         return geofencePendingIntent;
     }
 }

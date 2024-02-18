@@ -96,8 +96,10 @@ public class HomeFragment extends Fragment {
 
         // Button to start a recording session. Only enable if all relevant permissions are granted.
         this.start = getView().findViewById(R.id.startStopButton);
+
         start.setEnabled(!PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getBoolean("permanentDeny", false));
+
         this.start.setOnClickListener(new View.OnClickListener() {
             /**
              * {@inheritDoc}

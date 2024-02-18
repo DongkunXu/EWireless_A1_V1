@@ -17,6 +17,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -33,6 +36,8 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -48,6 +53,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.app.PendingIntent;
@@ -56,12 +62,15 @@ import android.content.Intent;
 //import com.example.yourapp.GeofenceBroadcastReceiver;
 
 import android.content.BroadcastReceiver;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.openpositioning.PositionMe.PdrProcessing;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 
 // ---------------------------------------------------------- ↑↑↑↑↑↑ ------------------------------------------------------------------ P 1
@@ -132,6 +141,12 @@ public class StartLocationFragment extends Fragment {
     private LatLng GPSPosition;
     //private LatLng PDRPosition;
     private LatLng STARTPosition;
+    private Animation blinkingAnimation;
+    private ImageView redDot; // 红点ImageView
+    private TextView Accuracy;
+    private float  Accuracy_number = 0;
+    private Circle accuracyCircle;
+
 
 
     // ---------------------------------------------------------- ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ ------------------------------------------------------------------ P 2
@@ -177,6 +192,21 @@ public class StartLocationFragment extends Fragment {
                 GPSPosition = newPosition;
                 //Log.d("SensorFusionCallback", "onLocationChanged: " + newPosition);
                 updatePositionMarker(newPosition);
+
+                if (accuracyCircle != null) {
+                    accuracyCircle.remove(); // 移除旧的圆圈
+                }
+
+                // 绘制新的圆圈
+                CircleOptions circleOptions = new CircleOptions()
+                        .center(newPosition) // 设置圆心为新位置
+                        .radius(Accuracy_number) // 将精确度设置为圆的半径
+                        .fillColor(0x30FFA500) // 半透明橙色
+                        .strokeColor(0xFFA500) // 橙色边框
+                        .strokeWidth(4); // 边框宽度
+                accuracyCircle = mMap.addCircle(circleOptions);
+
+                //Toast.makeText(getContext(), "Location Changed", Toast.LENGTH_SHORT).show();
 
                 /*
                 Due to the restrictions on the use of geofences by Google API,
@@ -249,6 +279,17 @@ public class StartLocationFragment extends Fragment {
                 //getActivity().runOnUiThread(() -> updatePosition(convertPdrDisplacementToLatLng(newPosition)));
             }
 
+            @Override
+            public void onAccuracyChanged(float accuracy) {
+                // 在这里更新UI或者处理精确度信息
+                Accuracy_number = accuracy;
+                Log.d("LocationAccuracy", "Current location accuracy: " + accuracy + " meters.");
+                if(Accuracy != null) {
+                    Accuracy.setText("  Accuracy: " + accuracy + " m  ");
+                }
+
+            }
+
         });
         // Set SensorFusion callback ---------------------------------------------------------------------------------- SensorFusion ↑↑↑
 
@@ -310,18 +351,21 @@ public class StartLocationFragment extends Fragment {
                         FloorButtonsNK.setVisibility(View.GONE);
                         FloorButtons.setVisibility(View.VISIBLE);
                         switchFloorNU(1);
+                        Toast.makeText(getActivity(), "Entering the nuclear building", Toast.LENGTH_SHORT).show();
                     }
                     else if (NoreenKennethBounds.contains(latLng)) {
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
                         FloorButtons.setVisibility(View.GONE);
                         FloorButtonsNK.setVisibility(View.VISIBLE);
                         switchFloorNK(0);
+                        Toast.makeText(getActivity(), "Entering the NKM Library", Toast.LENGTH_SHORT).show();
                     }
                     else {
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
                         FloorButtons.setVisibility(View.GONE);
                         noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
                         FloorButtonsNK.setVisibility(View.GONE);
+                        //Toast.makeText(getActivity(), "Leaving Building", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -354,6 +398,17 @@ public class StartLocationFragment extends Fragment {
         setupFloorSelectionButtons(view); // 初始化楼层选择按钮
         setupFloorSelectionButtonsNK(view);
 
+        // --------------------------------Red Dot--------------------------------↓↓↓
+        // 初始化红点ImageView
+        redDot = view.findViewById(R.id.RedDot); // 假设你的红点ImageView的ID是redDot
+
+        // 设置闪烁动画
+        blinkingAnimation = new AlphaAnimation(1, 0); // 从完全可见到完全透明
+        blinkingAnimation.setDuration(800); // 持续时间为800毫秒
+        blinkingAnimation.setInterpolator(new LinearInterpolator());
+        blinkingAnimation.setRepeatCount(Animation.INFINITE); // 无限重复
+        blinkingAnimation.setRepeatMode(Animation.REVERSE); // 反转动画
+        // --------------------------------Red Dot--------------------------------↑↑↑
 
         // 定位按钮
         Button locateButton = view.findViewById(R.id.locateButton); // 假设按钮ID为locateButton
@@ -368,9 +423,14 @@ public class StartLocationFragment extends Fragment {
             }
         });
 
+        //初始化TextView用於顯示定位準確度
+        Accuracy = view.findViewById(R.id.Accuracy);
+
         // 初始化记录按钮
         Button Rec = view.findViewById(R.id.Rec);
         Rec.setText(">");
+        redDot.clearAnimation(); // 停止闪烁动画
+        redDot.setVisibility(View.GONE); // 隐藏红点
 
         Rec.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -380,24 +440,23 @@ public class StartLocationFragment extends Fragment {
                     // 停止记录
                     isRecording = false;
                     Rec.setText(">"); // 将按钮文本设置为“开始”
-
+                    Rec.setBackgroundResource(R.drawable.round_button);
                     sensorFusion.stopRecording();
-
-                    // 停止PdrTracker的轨迹记录的逻辑
+                    redDot.clearAnimation(); // 停止闪烁动画
+                    redDot.setVisibility(View.GONE); // 隐藏红点
                 } else {
                     Toast.makeText(getActivity(), "Start Rec", Toast.LENGTH_SHORT).show();
                     // 开始记录
                     clearPreviousPath();
-
                     isRecording = true;
                     Rec.setText("||"); // 将按钮文本设置为“停止”
-
+                    Rec.setBackgroundResource(R.drawable.round_button_red);
+                    redDot.setVisibility(View.VISIBLE);
+                    redDot.startAnimation(blinkingAnimation);//开始闪红点
                     if (GPSPosition != null) {
                         STARTPosition = GPSPosition;
                     }
-
                     sensorFusion.startRecording();
-
                 }
             }
         });
@@ -461,9 +520,11 @@ public class StartLocationFragment extends Fragment {
                     if (mMap != null) {
                         if (isChecked) {
                             mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                            Toast.makeText(getActivity(), "HYBRID Map", Toast.LENGTH_SHORT).show();
                             Log.d("Switch", "Sat");
                         } else {
                             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                            Toast.makeText(getActivity(), "NORMAL Map", Toast.LENGTH_SHORT).show();
                             Log.d("Switch", "Nor");
                         }
                     }
@@ -504,7 +565,7 @@ public class StartLocationFragment extends Fragment {
             return; // 直接返回，不更新位置
         }
         //currentPositionMarker.setPosition(newPosition);
-        Toast.makeText(getContext(), "Position Update", Toast.LENGTH_SHORT).show(); // 显示 Toast 消息
+        //Toast.makeText(getContext(), "Position Update", Toast.LENGTH_SHORT).show(); // 显示 Toast 消息
         Log.e("StartLocationFragment", "updatePosition" + newPosition);
 
         if(isRecording) {
@@ -623,7 +684,6 @@ public class StartLocationFragment extends Fragment {
         }
 
 
-
         // 将北向（纬度方向）的位移转换为纬度的变化
         double latitudeOffset = pdrDisplacement[0] / 111319.9; // 每度纬度大约对应111,319.9米
 
@@ -637,8 +697,6 @@ public class StartLocationFragment extends Fragment {
         // 创建新的LatLng对象
         return new LatLng(newLatitude, newLongitude);
     }
-
-
 
 
     // ---------------------------------------------------------- ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ ------------------------------------------------------------------ P 5

@@ -182,20 +182,13 @@ public class SensorFusion implements SensorEventListener, Observer {
         void onLocationChanged(LatLng newPosition);
         void onOrientationChanged(float newOrientation);
         void onLocationPDRChanged(float[] newPDRPosition);
+        void onAccuracyChanged(float accuracy);
     }
 
     private SensorUpdateCallback sensorUpdateCallback;
 
     public void setSensorUpdateCallback(SensorUpdateCallback callback) {
         this.sensorUpdateCallback = callback;
-    }
-
-    //@Override
-    public void onLocationChanged(Location location) {
-        if(location != null && sensorUpdateCallback != null){
-            LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
-            sensorUpdateCallback.onLocationChanged(newPosition);
-        }
     }
 
 
@@ -377,7 +370,7 @@ public class SensorFusion implements SensorEventListener, Observer {
             case Sensor.TYPE_STEP_DETECTOR:
                 //Store time of step
                 long stepTime = android.os.SystemClock.uptimeMillis() - bootTime;
-                float[] newCords = this.pdrProcessing.updatePdr(stepTime, this.accelMagnitude, this.orientation[0]);
+                float[] newCords = this.pdrProcessing.updatePdr(stepTime, this.accelMagnitude, - this.orientation[0]);
                 //pdrPosition = new LatLng(newCords[0], newCords[1]);
                 if (saveRecording) {
                     // Store the PDR coordinates for plotting the trajectory
@@ -411,6 +404,7 @@ public class SensorFusion implements SensorEventListener, Observer {
         @Override
         public void onLocationChanged(Location location) {
             if(location != null){
+
                 //Toast.makeText(context, "Location Changed", Toast.LENGTH_SHORT).show();
                 latitude = (float) location.getLatitude();
                 longitude = (float) location.getLongitude();
@@ -433,7 +427,9 @@ public class SensorFusion implements SensorEventListener, Observer {
                 }
                 // --------------------------------------- My Code ------------------------------------------------ >>>
                 if(sensorUpdateCallback != null){
+                    LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
                     sensorUpdateCallback.onLocationChanged(currentLatLng);
+                    sensorUpdateCallback.onAccuracyChanged(accuracy); // 使用回调函数传递精确度
                 }
                 // --------------------------------------- My Code ------------------------------------------------ >>>
             }

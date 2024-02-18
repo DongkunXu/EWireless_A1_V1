@@ -131,6 +131,24 @@ First deliverable :white_check_mark:
 ### Known issues
 :x: PDR accuracy is not high. Long term use has visible cumulative errors. There will be a difference from the real position after multiple turns. :confounded: Introducing other external parameters or algorithms for reference correction can be considered later. <br>
 
+
+## [V0.2.1 - "GNSS Accuracy"] - 2024-02-17
+Add new feature
+
+### Added
+:sparkles: Positioning accuracy was added. Users can now see the current GNSS positioning accuracy in the upper right corner of the view.<br>
+:sparkles: A visual display of positioning accuracy has been added. Draw a circular area around the user's position to  display positioning accuracy more intuitively.<br>
+
+### Changed
+:recycle: Updated the way PDR status is displayed. The start button now flashes to remind the user that the PDR function is running. <br>
+:recycle: The angle sensor output has been updated to address incorrect PDR angles. <br>
+
+### Fixed
+:hammer: Partially fixed the problem that the PDR direction does not match the actual position. <br>
+
+### Known issues
+:x: The PDR starting direction is wrong, which will cause the starting angle to be inconsistent with the actual starting angle :confounded: .<br>
+
 ****
 
 ### Installation
