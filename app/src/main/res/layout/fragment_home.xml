@@ -39,7 +39,7 @@
             app:backgroundTint="?attr/colorPrimaryVariant"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:tint="@color/white" />
+            app:tint="@color/whitet" />
 
         <Button
             android:id="@+id/startStopButton"
