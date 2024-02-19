@@ -149,6 +149,23 @@ Add new feature
 ### Known issues
 :x: The PDR starting direction is wrong, which will cause the starting angle to be inconsistent with the actual starting angle :confounded: .<br>
 
+
+## [V0.2.2 - "New UI"] - 2024-02-18
+Changed UI. The user guide will be based on this version.
+
+### Added
+:sparkles: Reorganized the UI interface to make it more consistent.<br>
+:sparkles: Added new theme colors.<br>
+
+### Changed
+:recycle: A more reasonable color combination makes the content easier to read. <br>
+
+### Fixed
+:hammer: -- <br>
+
+### Known issues
+:x: The PDR starting angle is still incorrect :confounded:. Consider modifying the algorithm output to correct.<br>
+
 ****
 
 ### Installation
