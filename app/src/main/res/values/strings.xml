@@ -20,7 +20,7 @@
     <!-- Sensors -->
     <string name="accelerometer">Accelerometer</string>
     <string name="gravity">Gravity</string>
-    <string name="magnetic">Magnetic field</string>
+    <string name="magnetic">Magnetic</string>
     <string name="gyro">Gyroscope</string>
     <string name="light">Light sensor</string>
     <string name="pressure">Pressure sensor</string>

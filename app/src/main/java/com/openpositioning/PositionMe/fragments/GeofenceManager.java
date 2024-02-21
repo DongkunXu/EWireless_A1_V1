@@ -32,14 +32,14 @@ public class GeofenceManager {
     }
 
     public void registerAllGeofences() {
-        // 为核能大楼注册地理围栏
+        // Register a geofence for Nuclear building
         registerGeofence(GEOFENCE_ID_NUCLEAR, new LatLng(55.923055, -3.174247), 150);
-        // 为诺琳和肯尼斯·默里图书馆注册地理围栏
+        // Register for geofencing for the NK Library
         registerGeofence(GEOFENCE_ID_NKLIB, new LatLng(55.922904, -3.174967), 50);
     }
 
     private void registerGeofence(String geofenceId, LatLng center, float radius) {
-        Log.d("GeofenceManager", "正在注册地理围栏: " + geofenceId + ", 中心: " + center + ", 半径: " + radius + "米");
+        Log.d("GeofenceManager", "Registering geofence: " + geofenceId + ", center: " + center + ", radius: " + radius + "m");
 
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(geofenceId)
@@ -50,12 +50,11 @@ public class GeofenceManager {
 
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // 已有权限，可以添加地理围栏
             geofencingClient.addGeofences(getGeofencingRequest(geofence), getGeofencePendingIntent())
-                    .addOnSuccessListener(aVoid -> Log.d("GeofenceManager", "地理围栏注册成功: " + geofenceId))
-                    .addOnFailureListener(e -> Log.e("GeofenceManager", "地理围栏注册失败: " + geofenceId, e));
+                    .addOnSuccessListener(aVoid -> Log.d("GeofenceManager", "Geofencing registration successful: " + geofenceId))
+                    .addOnFailureListener(e -> Log.e("GeofenceManager", "Geofence registration failed: " + geofenceId, e));
         } else {
-            // 没有权限，需要请求权限
+            // No permission, request permission
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
         }
 
@@ -68,6 +67,7 @@ public class GeofenceManager {
                 .build();
     }
 
+    //Check if there are any pending geofences and check the Android version to comply with Android regulations.
     private PendingIntent getGeofencePendingIntent() {
         if (geofencePendingIntent != null) {
             return geofencePendingIntent;
@@ -76,7 +76,7 @@ public class GeofenceManager {
         // Check the Android version before setting flags
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            flags |= PendingIntent.FLAG_IMMUTABLE; // Use FLAG_MUTABLE if needed
+            flags |= PendingIntent.FLAG_IMMUTABLE;
         }
         geofencePendingIntent = PendingIntent.getBroadcast(context, 0, intent, flags);
         return geofencePendingIntent;

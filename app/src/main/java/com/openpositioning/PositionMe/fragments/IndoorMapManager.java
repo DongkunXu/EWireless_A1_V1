@@ -13,24 +13,26 @@ import com.google.android.gms.maps.model.LatLngBounds;
 public class IndoorMapManager {
     private GoogleMap mMap;
     private GroundOverlay[] groundOverlays; // GroundOverlay used to store each layer
-    private int currentFloor = 0; // Floor displayed by default
+    private int currentFloor = 0; // Floor by default
 
     public IndoorMapManager(GoogleMap map, int floorNumber) {
-        this.mMap = map;
+        this.mMap = map; // Pass in Google Maps
         this.groundOverlays = new GroundOverlay[floorNumber]; // Set the number of floors
     }
 
+    // Used to add floors
     public void addFloor(int floorIndex, int drawableResId, LatLngBounds bounds) {
         BitmapDescriptor image = BitmapDescriptorFactory.fromResource(drawableResId);
         GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
                 .image(image)
                 .positionFromBounds(bounds)
                 .visible(floorIndex == currentFloor)
-                .transparency(0.2f); // Only the current floor is visible
+                .transparency(0.2f);
 
         groundOverlays[floorIndex] = mMap.addGroundOverlay(groundOverlayOptions);
     }
 
+    // Switch floors and make sure only one floor is displayed
     public void switchFloor(int floorIndex) {
         if (floorIndex < 0 || floorIndex >= groundOverlays.length) {
             return; // Prevent index out of bounds
@@ -49,6 +51,7 @@ public class IndoorMapManager {
         currentFloor = floorIndex;
     }
 
+    // Hide all floors
     public void hideMap() {
         //Hide all floors
         for (GroundOverlay overlay : groundOverlays) {

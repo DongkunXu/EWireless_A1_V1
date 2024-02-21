@@ -18,15 +18,14 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
-            Log.e("GeofenceReceiver", "地理围栏事件错误: " + geofencingEvent.getErrorCode());
+            Log.e("GeofenceReceiver", "Geofence event error: " + geofencingEvent.getErrorCode());
             return;
         }
 
-        // 获取地理围栏事件的类型
+        // Get the type of geofence event
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
-        Log.d("GeofenceReceiver", "地理围栏事件触发, 类型: " + geofenceTransition);
+        Log.d("GeofenceReceiver", "Geofence event trigger, type: " + geofenceTransition);
 
-        // 检查触发的地理围栏列表是否为null并且不为空
         if (geofencingEvent.getTriggeringGeofences() != null && !geofencingEvent.getTriggeringGeofences().isEmpty()) {
             String geofenceId = geofencingEvent.getTriggeringGeofences().get(0).getRequestId();
 
@@ -34,20 +33,16 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             localIntent.putExtra("GEOFENCE_ID", geofenceId);
             localIntent.putExtra("GEOFENCE_TRANSITION_TYPE", geofenceTransition);
 
-            // 在主线程上显示Toast消息
-            //Handler handler = new Handler(Looper.getMainLooper());
-            //handler.post(() -> Toast.makeText(context, "Cross the boundary", Toast.LENGTH_SHORT).show());
 
-            // 发送本地广播
+            // Send local broadcast
             LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
         } else {
-            Log.e("GeofenceReceiver", "触发的地理围栏列表为空或null");
+            Log.e("GeofenceReceiver", "List of triggered geofences is empty or null");
         }
 
         if (geofencingEvent.hasError()) {
             int errorCode = geofencingEvent.getErrorCode();
-            Log.e("GeofenceReceiver", "地理围栏事件错误代码: " + errorCode);
-            // 根据错误代码进行适当处理
+            Log.e("GeofenceReceiver", "Geofence event error code: " + errorCode);
             return;
         }
 

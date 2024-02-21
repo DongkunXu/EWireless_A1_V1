@@ -14,12 +14,15 @@ public class NoreenandKennethMurrayLibraryMap {
     private IndoorMapManager indoorMapManager;
 
     public NoreenandKennethMurrayLibraryMap(GoogleMap map) {
-        // The nuclear building has 5 floors
+        // The NK Lib has 4 floors
         indoorMapManager = new IndoorMapManager(map, 4);
 
+        // The real location of the building
+        // southwest corner
         double N1 = 55.92281;
         double W1 = 3.175171;
 
+        // Northeast corner
         double N2 = 55.923065;
         double W2 = 3.174747;
 
@@ -28,7 +31,6 @@ public class NoreenandKennethMurrayLibraryMap {
         indoorMapManager.addFloor(1, R.drawable.library1, new LatLngBounds(new LatLng(N1, -W1), new LatLng(N2, -W2)));
         indoorMapManager.addFloor(2, R.drawable.library2, new LatLngBounds(new LatLng(N1, -W1), new LatLng(N2, -W2)));
         indoorMapManager.addFloor(3, R.drawable.library3, new LatLngBounds(new LatLng(N1, -W1), new LatLng(N2, -W2)));
-        //indoorMapManager.addFloor(4, R.drawable.floor_3, new LatLngBounds(new LatLng(N1, -W1), new LatLng(N2, -W2)));
 
     }
     public IndoorMapManager getIndoorMapManager() {

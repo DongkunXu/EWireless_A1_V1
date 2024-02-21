@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -20,6 +21,8 @@ import com.openpositioning.PositionMe.PathView;
 import com.openpositioning.PositionMe.PdrProcessing;
 import com.openpositioning.PositionMe.ServerCommunications;
 import com.openpositioning.PositionMe.Traj;
+import com.openpositioning.PositionMe.fragments.HomeFragment;
+import com.openpositioning.PositionMe.fragments.RecordingFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -177,7 +180,7 @@ public class SensorFusion implements SensorEventListener, Observer {
     }
 
     // --------------------------------------- My Code ------------------------------------------------ //
-
+    // callback functions
     public interface SensorUpdateCallback {
         void onLocationChanged(LatLng newPosition);
         void onOrientationChanged(float newOrientation);
@@ -190,7 +193,6 @@ public class SensorFusion implements SensorEventListener, Observer {
     public void setSensorUpdateCallback(SensorUpdateCallback callback) {
         this.sensorUpdateCallback = callback;
     }
-
 
     // --------------------------------------- My Code ------------------------------------------------ //
 
@@ -355,12 +357,13 @@ public class SensorFusion implements SensorEventListener, Observer {
                 SensorManager.getOrientation(rotationMatrix, orientationAngles);
 
                 orientation = orientationAngles;
-                // Convert radians to degrees and normalize the angle
+                // --- Convert radians to degrees and normalize the angle --- //
                 float newOrientation = (float) Math.toDegrees(orientationAngles[0]);
-                newOrientation = (newOrientation + 360) % 360;
+                newOrientation = (newOrientation + 360 + 0 ) % 360;
 
+                // send back angle data
                 if(sensorUpdateCallback != null){
-                    sensorUpdateCallback.onOrientationChanged(newOrientation );
+                    sensorUpdateCallback.onOrientationChanged(newOrientation);
                     Log.d("SensorFusion", "Orientation changed: " + newOrientation);
                 }
                 break;
@@ -370,7 +373,16 @@ public class SensorFusion implements SensorEventListener, Observer {
             case Sensor.TYPE_STEP_DETECTOR:
                 //Store time of step
                 long stepTime = android.os.SystemClock.uptimeMillis() - bootTime;
-                float[] newCords = this.pdrProcessing.updatePdr(stepTime, this.accelMagnitude, - this.orientation[0]);
+
+
+                float orientationCorrect = - this.orientation[0] + (float)Math.PI / 2; // Manually correct sensor errors.
+                /** !!!
+                 * Note:
+                 * This is a persistent problem discovered through repeated testing of the same mobile phone.
+                 * For different devices, you may need to delete this part of the code to get the correct data! ! !
+                 */
+
+                float[] newCords = this.pdrProcessing.updatePdr(stepTime, this.accelMagnitude, orientationCorrect); // Pass in the corrected angle
                 //pdrPosition = new LatLng(newCords[0], newCords[1]);
                 if (saveRecording) {
                     // Store the PDR coordinates for plotting the trajectory
@@ -384,6 +396,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setX(newCords[0]).setY(newCords[1]));
                 }
 
+                // send back PDR data
                 if (sensorUpdateCallback != null) {
                     sensorUpdateCallback.onLocationPDRChanged(newCords);
                 }
@@ -427,9 +440,10 @@ public class SensorFusion implements SensorEventListener, Observer {
                 }
                 // --------------------------------------- My Code ------------------------------------------------ >>>
                 if(sensorUpdateCallback != null){
+                    // Use callback function to send back accuracy and Location
                     LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
                     sensorUpdateCallback.onLocationChanged(currentLatLng);
-                    sensorUpdateCallback.onAccuracyChanged(accuracy); // 使用回调函数传递精确度
+                    sensorUpdateCallback.onAccuracyChanged(accuracy);
                 }
                 // --------------------------------------- My Code ------------------------------------------------ >>>
             }

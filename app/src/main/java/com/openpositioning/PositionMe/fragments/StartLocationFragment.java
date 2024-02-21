@@ -88,6 +88,12 @@ import androidx.annotation.Nullable;
  *
  * @author Virginia Cangelosi
  */
+
+/*
+There are many log or toast statements in the code,
+which are temporarily kept in the code for maintenance and debugging in future versions.
+ */
+
 public class StartLocationFragment extends Fragment {
 
     // ---------------------------------------------------------- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ------------------------------------------------------------------ P 2
@@ -115,9 +121,11 @@ public class StartLocationFragment extends Fragment {
     private BroadcastReceiver geofenceBroadcastReceiver;
     private int FloorNU = 1;
     private int FloorNK = 0;
-    private boolean isRecording = false; // 记录状态
-    private ArrayList<LatLng> pathPoints; // 轨迹点
-    private MarkerOptions markerOptions; // 初始位置标记
+    private boolean isRecording = false; // Store recoring button state
+    private ArrayList<LatLng> pathPoints; // track point
+    private MarkerOptions markerOptions;
+
+    // Area used to determine whether the indoor map is displayed when the user clicks on the map ↓↓↓
     private LatLngBounds NuclearBuildingBounds = new LatLngBounds(
             new LatLng(55.92279, -3.174643), // SW corner
             new LatLng(55.92335, -3.173829)  // NE corner
@@ -126,7 +134,10 @@ public class StartLocationFragment extends Fragment {
             new LatLng(55.92281, -3.175171), // SW corner
             new LatLng(55.923065, -3.174747) // NE corner
     );
+    // Area used to determine whether the indoor map is displayed when the user clicks on the map ↑↑↑
 
+
+    // A larger area used to determine whether the indoor map should displayed when the user walks into the building.  ↓↓↓
     private LatLngBounds NuclearBigger = new LatLngBounds(
             new LatLng(55.922679, -3.174672), // SW corner
             new LatLng(55.923316, -3.173781)  // NE corner
@@ -135,17 +146,18 @@ public class StartLocationFragment extends Fragment {
             new LatLng(55.922679, -3.175295), // SW corner
             new LatLng(55.923043, -3.174704) // NE corner
     );
-    //private PolylineOptions polylineOptions = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+    // A larger area used to determine whether the indoor map should displayed when the user walks into the building. ↑↑↑
+
     private Switch geoOrNotSwitch;
-    private Polyline currentPolyline; // 当前绘制的轨迹
+    private Polyline currentPolyline; // The currently drawn trajectory
     private LatLng GPSPosition;
     //private LatLng PDRPosition;
-    private LatLng STARTPosition;
+    private LatLng STARTPosition; // Store the PDR starting point
     private Animation blinkingAnimation;
-    private ImageView redDot; // 红点ImageView
-    private TextView Accuracy;
-    private float  Accuracy_number = 0;
-    private Circle accuracyCircle;
+    private ImageView redDot; // Red dot ImageView
+    private TextView Accuracy; // display accuracy
+    private float  Accuracy_number = 0; // Storage accuracy, initialized to 0
+    private Circle accuracyCircle; // Show accuracy circle
 
 
 
@@ -194,16 +206,16 @@ public class StartLocationFragment extends Fragment {
                 updatePositionMarker(newPosition);
 
                 if (accuracyCircle != null) {
-                    accuracyCircle.remove(); // 移除旧的圆圈
+                    accuracyCircle.remove(); // Remove old circles
                 }
 
-                // 绘制新的圆圈
+                // draw new circle
                 CircleOptions circleOptions = new CircleOptions()
-                        .center(newPosition) // 设置圆心为新位置
-                        .radius(Accuracy_number) // 将精确度设置为圆的半径
-                        .fillColor(0x30FFA500) // 半透明橙色
-                        .strokeColor(0xFFA500) // 橙色边框
-                        .strokeWidth(4); // 边框宽度
+                        .center(newPosition) // Set the circle center to the new position
+                        .radius(Accuracy_number)
+                        .fillColor(0x30FFA500)
+                        .strokeColor(0xFFA500) // border
+                        .strokeWidth(4); // border width
                 accuracyCircle = mMap.addCircle(circleOptions);
 
                 //Toast.makeText(getContext(), "Location Changed", Toast.LENGTH_SHORT).show();
@@ -242,58 +254,53 @@ public class StartLocationFragment extends Fragment {
                 }
             }
 
+            // Update new angle value when angle changes
             @Override
             public void onOrientationChanged(float newOrientation) {
                 // update Orientation
                 //Log.d("SensorFusionCallback", "Trying to update orientation to: " + newOrientation);
-                try {
-                    if (currentPositionMarker != null) {
-                        currentPositionMarker.setRotation(newOrientation);
-                        //Log.d("SensorFusionCallback", "Orientation updated successfully.");
-                    } else {
-                        //Log.d("SensorFusionCallback", "currentPositionMarker is null.");
-                    }
-                } catch (Exception e) {
-                    //Log.e("SensorFusionCallback", "Error updating orientation: ", e);
+                if (currentPositionMarker != null) {
+                    currentPositionMarker.setRotation(newOrientation);
+                    //Log.d("SensorFusionCallback", "Orientation updated successfully.");
+                } else {
+                    //Log.d("SensorFusionCallback", "currentPositionMarker is null.");
                 }
             }
 
-            @Override // ---------------------------------------------------------------------------------------------NEW PDR >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // Update the pdr position when the PDR data changes
+            @Override // --------------------------------------------------------------------------------------------- NEW PDR >>>
             public void onLocationPDRChanged(float[] newPosition) {
 
-                // 检查 newPosition 是否为 null
                 if (newPosition == null) {
-                    Log.d("SensorFusionCallback", "收到的 PDR 位置更新为 null");
-                    return; // 直接返回以避免后续空指针异常
+                    Log.d("SensorFusionCallback", "Received PDR position update is null");
+                    return;
                 }
 
-                // 此处处理 PDR 位置更新
-                PDRPosition = newPosition;
-                Toast.makeText(getContext(), "检测到步伐", Toast.LENGTH_SHORT).show(); // 显示 Toast 消息
-                Log.d("SensorFusionCallback", "PDR位置更新: " + Arrays.toString(newPosition));
-
-                //STARTPosition = TruePosition(PDRPosition);
-
-                updatePosition(TruePosition(PDRPosition));
-
-                //getActivity().runOnUiThread(() -> updatePosition(convertPdrDisplacementToLatLng(newPosition)));
+                // Avoid passing in null
+                if (newPosition != null) {
+                    // Update pdr location
+                    PDRPosition = newPosition;
+                    updatePosition(TruePosition(PDRPosition));
+                }
+                //Toast.makeText(getContext(), "Walking detected", Toast.LENGTH_SHORT).show();
+                Log.d("SensorFusionCallback", "PDR location update: " + Arrays.toString(newPosition));
             }
 
+            // Get new Accuracy when Accuracy changes
             @Override
             public void onAccuracyChanged(float accuracy) {
-                // 在这里更新UI或者处理精确度信息
                 Accuracy_number = accuracy;
                 Log.d("LocationAccuracy", "Current location accuracy: " + accuracy + " meters.");
                 if(Accuracy != null) {
                     Accuracy.setText("  Accuracy: " + accuracy + " m  ");
                 }
-
             }
 
         });
         // Set SensorFusion callback ---------------------------------------------------------------------------------- SensorFusion ↑↑↑
 
-        //Initialize the switch and set up the listener
+        // Initialize the switch and set up the listener
+        // Use to determine whether to enable longitude and latitude judgment
         geoOrNotSwitch = rootView.findViewById(R.id.geoOrNotSwitch);
         geoOrNotSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             buttonView.setText(isChecked ? "  LLJ" : "  GF");
@@ -336,7 +343,7 @@ public class StartLocationFragment extends Fragment {
                 mMap.getUiSettings().setScrollGesturesEnabled(true);
 
                 position = new LatLng(startPosition[0], startPosition[1]);
-                // Replace mark with arrow icon
+                // Use new image resources and set marker
                 currentPositionMarker = mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.trana))
@@ -345,20 +352,21 @@ public class StartLocationFragment extends Fragment {
                         .flat(true));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
+                // Used to determine whether the user's click is within the building area with indoor map
                 mMap.setOnMapClickListener(latLng -> {
                     if (NuclearBuildingBounds.contains(latLng)) {
                         noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
                         FloorButtonsNK.setVisibility(View.GONE);
                         FloorButtons.setVisibility(View.VISIBLE);
                         switchFloorNU(1);
-                        Toast.makeText(getActivity(), "Entering the nuclear building", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Nuclear building map", Toast.LENGTH_SHORT).show();
                     }
                     else if (NoreenKennethBounds.contains(latLng)) {
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
                         FloorButtons.setVisibility(View.GONE);
                         FloorButtonsNK.setVisibility(View.VISIBLE);
                         switchFloorNK(0);
-                        Toast.makeText(getActivity(), "Entering the NKM Library", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "NKM Library map", Toast.LENGTH_SHORT).show();
                     }
                     else {
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
@@ -391,27 +399,27 @@ public class StartLocationFragment extends Fragment {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.startMap);
         //mapFragment.getMapAsync(this);
 
-        // 楼层按钮初始化
-        FloorButtons = view.findViewById(R.id.FloorButtons); // 确保你的布局文件中有这个ID
+        // Floor button initialization
+        FloorButtons = view.findViewById(R.id.FloorButtons);
         FloorButtonsNK = view.findViewById(R.id.FloorButtonsNK);
 
-        setupFloorSelectionButtons(view); // 初始化楼层选择按钮
+        setupFloorSelectionButtons(view);
         setupFloorSelectionButtonsNK(view);
 
         // --------------------------------Red Dot--------------------------------↓↓↓
-        // 初始化红点ImageView
-        redDot = view.findViewById(R.id.RedDot); // 假设你的红点ImageView的ID是redDot
+        // Initialize red dot ImageView
+        redDot = view.findViewById(R.id.RedDot);
 
-        // 设置闪烁动画
-        blinkingAnimation = new AlphaAnimation(1, 0); // 从完全可见到完全透明
-        blinkingAnimation.setDuration(800); // 持续时间为800毫秒
+        // Set flash animation
+        blinkingAnimation = new AlphaAnimation(1, 0);
+        blinkingAnimation.setDuration(800);
         blinkingAnimation.setInterpolator(new LinearInterpolator());
-        blinkingAnimation.setRepeatCount(Animation.INFINITE); // 无限重复
-        blinkingAnimation.setRepeatMode(Animation.REVERSE); // 反转动画
+        blinkingAnimation.setRepeatCount(Animation.INFINITE);
+        blinkingAnimation.setRepeatMode(Animation.REVERSE);
         // --------------------------------Red Dot--------------------------------↑↑↑
 
-        // 定位按钮
-        Button locateButton = view.findViewById(R.id.locateButton); // 假设按钮ID为locateButton
+        // Position button
+        Button locateButton = view.findViewById(R.id.locateButton);
         locateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -423,36 +431,37 @@ public class StartLocationFragment extends Fragment {
             }
         });
 
-        //初始化TextView用於顯示定位準確度
+        // Initialize TextView to display positioning accuracy
         Accuracy = view.findViewById(R.id.Accuracy);
 
-        // 初始化记录按钮
+        // Initialize record button
         Button Rec = view.findViewById(R.id.Rec);
         Rec.setText(">");
-        redDot.clearAnimation(); // 停止闪烁动画
-        redDot.setVisibility(View.GONE); // 隐藏红点
+        redDot.clearAnimation(); // Stop flashing animation
+        redDot.setVisibility(View.GONE);
 
         Rec.setOnClickListener(new View.OnClickListener() {
+            // Stop recording if it is already recording, and start recording if there is no recording
             @Override
             public void onClick(View view) {
                 if (isRecording) {
                     Toast.makeText(getActivity(), "Stop Rec", Toast.LENGTH_SHORT).show();
-                    // 停止记录
+                    // Stop recording
                     isRecording = false;
-                    Rec.setText(">"); // 将按钮文本设置为“开始”
+                    Rec.setText(">");
                     Rec.setBackgroundResource(R.drawable.round_button);
                     sensorFusion.stopRecording();
-                    redDot.clearAnimation(); // 停止闪烁动画
-                    redDot.setVisibility(View.GONE); // 隐藏红点
+                    redDot.clearAnimation();
+                    redDot.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(getActivity(), "Start Rec", Toast.LENGTH_SHORT).show();
-                    // 开始记录
+                    // Start recording
                     clearPreviousPath();
                     isRecording = true;
-                    Rec.setText("||"); // 将按钮文本设置为“停止”
+                    Rec.setText("||");
                     Rec.setBackgroundResource(R.drawable.round_button_red);
                     redDot.setVisibility(View.VISIBLE);
-                    redDot.startAnimation(blinkingAnimation);//开始闪红点
+                    redDot.startAnimation(blinkingAnimation);// Start flashing red dot
                     if (GPSPosition != null) {
                         STARTPosition = GPSPosition;
                     }
@@ -472,7 +481,7 @@ public class StartLocationFragment extends Fragment {
 
                 if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
                     if (GEOFENCE_ID_NUCLEAR.equals(geofenceId)) {
-                        // User enters the nuclear energy building area
+                        // --- User enters the nuclear energy building area ---
                         Log.d("GeofenceReceiver", "IN Nuclear building");
                         Toast.makeText(context, "Entering the nuclear building", Toast.LENGTH_SHORT).show();
                         FloorButtons.setVisibility(View.VISIBLE);
@@ -487,7 +496,7 @@ public class StartLocationFragment extends Fragment {
                     }
                 } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                     if (GEOFENCE_ID_NUCLEAR.equals(geofenceId)) {
-                        // The user leaves the nuclear energy building area
+                        // --- The user leaves the nuclear energy building area ---
                         Log.d("GeofenceReceiver", "OUT Nuclear building");
                         Toast.makeText(context, "Leaving the nuclear building", Toast.LENGTH_SHORT).show();
                         nuclearBuildingManager.getIndoorMapManager().hideMap();
@@ -496,7 +505,7 @@ public class StartLocationFragment extends Fragment {
                         FloorButtonsNK.setVisibility(View.GONE);
 
                     } else if (GEOFENCE_ID_NKLIB.equals(geofenceId)) {
-                        // User leaves library area
+                        // --- User leaves library area ---
                         Log.d("GeofenceReceiver", "OUT Library");
                         Toast.makeText(context, "Leaving the Library", Toast.LENGTH_SHORT).show();
                         noreenandKennethMurrayLibry.getIndoorMapManager().hideMap();
@@ -525,6 +534,7 @@ public class StartLocationFragment extends Fragment {
                         } else {
                             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                             Toast.makeText(getActivity(), "NORMAL Map", Toast.LENGTH_SHORT).show();
+                            //float number = 20;
                             Log.d("Switch", "Nor");
                         }
                     }
@@ -542,30 +552,29 @@ public class StartLocationFragment extends Fragment {
     // ---------------------------------------------------------- Member function ------------------------------------------------------------------ P 5
     // ---------------------------------------------------------- ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ ------------------------------------------------------------------ P 5
 
-    private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){  //  将定位换成箭头图标
-        // 尝试加载图标资源
+    private BitmapDescriptor resizeMapIcons(String iconName, int width, int height){  //  ----- Change icon ↓↓↓
+        // Loading icon resources
         Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier(iconName, "drawable", getActivity().getPackageName()));
         if (imageBitmap != null) {
-            // 如果成功加载，进行缩放
+            // If loaded successfully, zoom it to fit
             Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
             return BitmapDescriptorFactory.fromBitmap(resizedBitmap);
         } else {
-            // 如果图标资源加载失败，记录错误或处理异常情况
-            Log.e("StartLocationFragment", "无法加载图标资源: " + iconName);
-            // 返回null或默认图标
+            // resource load fails
+            Log.e("StartLocationFragment", "Unable to load icon resource: " + iconName);
             return null;
         }
     }
 
-    // --------------------------------------------------------------------------------------Update Marker ↓↓↓
+    // -------------------------------------------------------------------------------------- Update Marker ↓↓↓
     private void updatePosition(LatLng newPosition) {
 
         if (newPosition == null) {
             Log.e("StartLocationFragment", "New position is null, not updating the marker.");
-            return; // 直接返回，不更新位置
+            return;
         }
         //currentPositionMarker.setPosition(newPosition);
-        //Toast.makeText(getContext(), "Position Update", Toast.LENGTH_SHORT).show(); // 显示 Toast 消息
+        //Toast.makeText(getContext(), "Position Update", Toast.LENGTH_SHORT).show();
         Log.e("StartLocationFragment", "updatePosition" + newPosition);
 
         if(isRecording) {
@@ -575,12 +584,12 @@ public class StartLocationFragment extends Fragment {
     }
 
     private void updatePositionMarker(LatLng newPosition) {
-        //Toast.makeText(getContext(), "Marker Update", Toast.LENGTH_SHORT).show(); // 显示 Toast 消息
+        //Toast.makeText(getContext(), "Marker Update", Toast.LENGTH_SHORT).show();
         currentPositionMarker.setPosition(newPosition);
         Log.e("StartLocationFragment", "updatePositionM" + newPosition);
     }
 
-    // -------------------------------------------------------------------------Refresh the map and redraw the trajectory ↓↓↓
+    // ------------------------------------------------------------------------- Refresh the map and redraw the trajectory ↓↓↓
     private void refreshMap() {
         int Orange = Color.argb(255, 255, 128, 0);
 
@@ -594,7 +603,7 @@ public class StartLocationFragment extends Fragment {
         currentPolyline = mMap.addPolyline(polylineOptions); // Draw a trajectory using the latest trajectory point list
     }
 
-    // -------------------------------------------------------------------------Clear the trajectory ↓↓↓
+    // ------------------------------------------------------------------------- Clear the trajectory ↓↓↓
     private void clearPreviousPath() {
         pathPoints.clear();
 
@@ -635,7 +644,7 @@ public class StartLocationFragment extends Fragment {
         view.findViewById(R.id.floor_three).setOnClickListener(v -> switchFloorNK(3));
     }
 
-    // Implement floor switching function ↓↓↓
+    // ---------------------------------------------------- Implement floor switching function ↓↓↓
     private void switchFloorNU(int floorIndex) {
         FloorNU = floorIndex;
         if (nuclearBuildingManager != null) {
@@ -669,35 +678,31 @@ public class StartLocationFragment extends Fragment {
 
 
     private LatLng TruePosition(float[] pdrDisplacement) {
-        // 确保 startPosition 不为 null 且 pdrDisplacement 长度为 2
+        // Check startPosition is not null and pdrDisplacement is of length 2
+        // for debugging
         if (STARTPosition == null) {
-            Log.e("StartLocationFragment", "起始位置为空");
-            return null; // 或返回一个默认位置
+            Log.e("StartLocationFragment", "Starting position is empty");
+            return null;
         }
         if (pdrDisplacement == null) {
-            Log.e("StartLocationFragment", "PDR 位置为空");
-            return null; // 或返回一个默认位置
+            Log.e("StartLocationFragment", "PDR location is empty");
+            return null;
         }
         if (pdrDisplacement.length != 2) {
-            Log.e("StartLocationFragment", "格式不正确");
-            return null; // 或返回一个默认位置
+            Log.e("StartLocationFragment", "Incorrect format");
+            return null;
         }
 
-
-        // 将北向（纬度方向）的位移转换为纬度的变化
-        double latitudeOffset = pdrDisplacement[0] / 111319.9; // 每度纬度大约对应111,319.9米
-
-        // 将东向（经度方向）的位移转换为经度的变化
+        // Convert the incoming distance in m to latitude and longitude
+        double latitudeOffset = pdrDisplacement[0] / 111319.9;
         double longitudeOffset = pdrDisplacement[1] / (111319.9 * Math.cos(Math.toRadians(STARTPosition.latitude)));
 
-        // 计算新的纬度和经度
+        // Add the starting point to get the true position
         double newLatitude = STARTPosition.latitude + latitudeOffset;
         double newLongitude = STARTPosition.longitude + longitudeOffset;
 
-        // 创建新的LatLng对象
         return new LatLng(newLatitude, newLongitude);
     }
-
 
     // ---------------------------------------------------------- ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ ------------------------------------------------------------------ P 5
     // ---------------------------------------------------------- Member function ------------------------------------------------------------------ P 5

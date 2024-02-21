@@ -169,7 +169,6 @@ public class PdrProcessing {
         // Log the original and adapted heading values
         Log.d("PDR_Position_Update", "Original Heading (rad): " + headingRad + ", Adapted Heading (rad): " + adaptedHeading);
 
-
         // -------------------------------Added------------------------------------------------<<<
 
         // return current position
@@ -395,9 +394,6 @@ public class PdrProcessing {
         //Return average step length
         return averageStepLength;
     }
-
-    // -------------------------------Added------------------------------------------------<<<
-    // -------------------------------Added------------------------------------------------<<<
 
 
 }
