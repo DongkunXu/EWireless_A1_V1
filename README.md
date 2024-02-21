@@ -166,6 +166,22 @@ Changed UI. The user guide will be based on this version.
 ### Known issues
 :x: The PDR starting angle is still incorrect :confounded:. Consider modifying the algorithm output to correct.<br>
 
+
+## [V0.2.3 - "Finished PDR"] - 2024-02-19 - 2024-02-21
+Code formatting. Fix PDR.
+
+### Added
+:bookmark_tabs: Write user guide.<br>
+:scroll: Write Programmer's Guide.<br>
+:video_camera: Record demo video.<br>
+
+### Changed
+:recycle: Modified some code formats. <br>
+
+### Fixed
+:hammer: Since the PDR direction offset is permanent,<br> the problem of incorrect PDR initial direction is fixed by manually increasing the angle. <br>
+
+
 ****
 
 ### Installation
