@@ -182,6 +182,24 @@ Code formatting. Fix PDR.
 :hammer: Since the PDR direction offset is permanent,<br> the problem of incorrect PDR initial direction is fixed by manually increasing the angle. <br>
 
 
+## [V0.3.0 - "Barometer_Integration"] - 2024-03-29
+Add barometer features.
+
+### Added
+:sparkles: Added barometer support.<br>
+:sparkles: GNSS data now includes altitude calculations.<br>
+:sparkles: Displayed data on the screen, including barometric pressure and calculated altitude.<br>
+
+### Changed
+:recycle: UI structure has been modified to accommodate new data displays.<br>
+
+### Fixed
+:hammer: -- <br>
+
+### Known issues
+:x: While barometric pressure data is accurate, the calculated altitude is not precise due to the use of a static weather model without real-time meteorological data. However, for floor determination, this is not a significant issue as relative values, which are accurate, can be used for assessment.<br>
+
+
 ****
 
 ### Installation
