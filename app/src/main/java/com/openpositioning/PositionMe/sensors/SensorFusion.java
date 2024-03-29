@@ -187,6 +187,7 @@ public class SensorFusion implements SensorEventListener, Observer {
         void onLocationPDRChanged(float[] newPDRPosition); // Used to call back PDR position update
         void onAccuracyChanged(float accuracy); // Used to call back positioning accuracy updates
         void onPressureChanged(float pressure, float altitude); // Used to call back the air pressure value update
+        void onWifiChanged(List<Wifi> newWifiList); // Used to call back when Wifi list is changed
     }
 
     private SensorUpdateCallback sensorUpdateCallback;
@@ -302,7 +303,6 @@ public class SensorFusion implements SensorEventListener, Observer {
                 if (sensorUpdateCallback != null) {
                     sensorUpdateCallback.onPressureChanged(pressure, altitude);
                 }
-
 
 
                 // --------------------------------------- My Code ------------------------------------------------ //
@@ -485,6 +485,12 @@ public class SensorFusion implements SensorEventListener, Observer {
             }
             this.trajectory.addWifiData(wifiData);
         }
+
+        // Call back funation for send the wifi data back
+        if (sensorUpdateCallback != null) {
+            sensorUpdateCallback.onWifiChanged(this.wifiList);
+        }
+
     }
 
     /**
@@ -874,19 +880,19 @@ public class SensorFusion implements SensorEventListener, Observer {
         public void run() {
             // Store IMU and magnetometer data in Trajectory class
             trajectory.addImuData(Traj.Motion_Sample.newBuilder()
-                    .setRelativeTimestamp(android.os.SystemClock.uptimeMillis()-bootTime)
-                    .setAccX(acceleration[0])
-                    .setAccY(acceleration[1])
-                    .setAccZ(acceleration[2])
-                    .setGyrX(angularVelocity[0])
-                    .setGyrY(angularVelocity[1])
-                    .setGyrZ(angularVelocity[2])
-                    .setGyrZ(angularVelocity[2])
-                    .setRotationVectorX(rotation[0])
-                    .setRotationVectorY(rotation[1])
-                    .setRotationVectorZ(rotation[2])
-                    .setRotationVectorW(rotation[3])
-                    .setStepCount(stepCounter))
+                            .setRelativeTimestamp(android.os.SystemClock.uptimeMillis()-bootTime)
+                            .setAccX(acceleration[0])
+                            .setAccY(acceleration[1])
+                            .setAccZ(acceleration[2])
+                            .setGyrX(angularVelocity[0])
+                            .setGyrY(angularVelocity[1])
+                            .setGyrZ(angularVelocity[2])
+                            .setGyrZ(angularVelocity[2])
+                            .setRotationVectorX(rotation[0])
+                            .setRotationVectorY(rotation[1])
+                            .setRotationVectorZ(rotation[2])
+                            .setRotationVectorW(rotation[3])
+                            .setStepCount(stepCounter))
                     .addPositionData(Traj.Position_Sample.newBuilder()
                             .setMagX(magneticField[0])
                             .setMagY(magneticField[1])

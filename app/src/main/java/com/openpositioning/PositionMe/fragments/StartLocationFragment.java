@@ -67,8 +67,12 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.openpositioning.PositionMe.PdrProcessing;
+import com.openpositioning.PositionMe.sensors.WifiDataUploader;
+import com.openpositioning.PositionMe.sensors.Wifi;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -107,6 +111,7 @@ public class StartLocationFragment extends Fragment {
     //Google maps LatLong object to pass location to the map
     private LatLng position;
     //Start position of the user to be stored
+    private LatLng newWifiPosition;
     private float[] startPosition = new float[2];
     private float[] PDRPosition = new float[2]; //----------------------------------------//
     //Zoom of google maps
@@ -117,12 +122,14 @@ public class StartLocationFragment extends Fragment {
     private NoreenandKennethMurrayLibraryMap noreenandKennethMurrayLibry;
     private LinearLayout FloorButtons;
     private LinearLayout FloorButtonsNK;
-    private Marker currentPositionMarker;
+    private Marker currentPositionMarker; // Display the position from GNSS
+    private Marker WifiPositionMarker; // Display the position from wifi
     private BroadcastReceiver geofenceBroadcastReceiver;
     private int FloorNU = 1;
     private int FloorNK = 0;
     private boolean isRecording = false; // Store recoring button state
     private ArrayList<LatLng> pathPoints; // track point
+
     private MarkerOptions markerOptions;
 
     // Area used to determine whether the indoor map is displayed when the user clicks on the map ↓↓↓
@@ -159,6 +166,8 @@ public class StartLocationFragment extends Fragment {
     private float  Accuracy_number = 0; // Storage accuracy, initialized to 0
     private Circle accuracyCircle; // Show accuracy circle
     private TextView Altitude; // Show Altitude
+    private WifiDataUploader WifiUploader; // Upload the wifi list
+
 
 
 
@@ -269,6 +278,7 @@ public class StartLocationFragment extends Fragment {
                 } else {
                     //Log.d("SensorFusionCallback", "currentPositionMarker is null.");
                 }
+
             }
 
             // Update the pdr position when the PDR data changes
@@ -305,6 +315,27 @@ public class StartLocationFragment extends Fragment {
                 if(Accuracy != null) {
                     Altitude.setText("  Altitude: " + altitude + " m  " + "  Pressure: " + pressure );
                 }
+            }
+
+            @Override
+            public void onWifiChanged(List<Wifi> newWifiList) {
+                // Wifi列表更新时的处理
+                Log.i("WifiDataUpload", "Wifi Changed");
+
+                /*if (newWifiList.size() >= 50) {
+                    List<Wifi> wifiList = newWifiList.subList(0, 50); // 获取前三个Wifi对象的子列表
+                    WifiUploader.uploadWifiList(wifiList); // 使用修改后的列表
+                } else {
+                    // 如果列表中不足三个元素，则直接上传整个列表
+                    WifiUploader.uploadWifiList(newWifiList);
+                }*/
+
+                WifiUploader.uploadWifiList(newWifiList);
+
+                if (newWifiPosition != null){
+                    updateWifiMarker(newWifiPosition);
+                }
+                //updateWifiMarker(newWifiPosition);
             }
 
         });
@@ -361,6 +392,15 @@ public class StartLocationFragment extends Fragment {
                         .icon(resizeMapIcons("trana",90,90))
                         .anchor(0.5f, 0.5f)
                         .flat(true));
+
+                // Use new image resources and set marker
+                WifiPositionMarker = mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.wifip))
+                        .icon(resizeMapIcons("wifip",90,90))
+                        .anchor(0.5f, 0.5f)
+                        .flat(true));
+
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
 
                 // Used to determine whether the user's click is within the building area with indoor map
@@ -596,8 +636,18 @@ public class StartLocationFragment extends Fragment {
 
     private void updatePositionMarker(LatLng newPosition) {
         //Toast.makeText(getContext(), "Marker Update", Toast.LENGTH_SHORT).show();
+
         currentPositionMarker.setPosition(newPosition);
         Log.e("StartLocationFragment", "updatePositionM" + newPosition);
+    }
+
+    // ------------------------------------------------------------------------- Update the wifi marker
+
+    private void updateWifiMarker(LatLng wifiPosition) {
+        //Toast.makeText(getContext(), "Marker Update", Toast.LENGTH_SHORT).show();
+
+        WifiPositionMarker.setPosition(wifiPosition);
+        Log.e("WifiDataUpload", "updateWifiMarker" + wifiPosition);
     }
 
     // ------------------------------------------------------------------------- Refresh the map and redraw the trajectory ↓↓↓
@@ -680,6 +730,21 @@ public class StartLocationFragment extends Fragment {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
+
+        WifiUploader = new WifiDataUploader(new WifiDataUploader.WifiDataUploadCallback() {
+            @Override
+            public void onUploadComplete(LatLng latLng) {
+                Log.i("WifiDataUpload", "JJJJ: " + latLng.latitude + " WWWW: " + latLng.longitude);
+                // 这里处理上传完成后的逻辑，例如更新UI
+                if (latLng != null){
+                    newWifiPosition = latLng;
+                }
+                else {
+                    newWifiPosition = latLng;  // Null check, Not finish yet ------------------------------------ !!! xxx
+                }
+            }
+        });
+
     }
     @Override
     public void onDestroy() {

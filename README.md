@@ -197,7 +197,27 @@ Add barometer features.
 :hammer: -- <br>
 
 ### Known issues
-:x: While barometric pressure data is accurate, the calculated altitude is not precise due to the use of a static weather model without real-time meteorological data. However, for floor determination, this is not a significant issue as relative values, which are accurate, can be used for assessment.<br>
+:x: While barometric pressure data is accurate, the calculated altitude is not precise due to the use of a static weather model without real-time meteorological data. However, for floor determination, this is not a significant issue as relative values, which are accurate, can be used for assessment.:ok_hand:<br>
+
+
+## [V0.3.1 - "Wifi Prosition"] - 2024-03-29
+Interact with the server to get location data.
+
+### Added
+:sparkles: Added new "WifiDataUploader" module to interact with the server and retrieve data.<br>
+New modules are contributed by other team members, please refer to [Log from Oscar](Oscar.md)
+
+
+### Changed
+:recycle: Updated new markers to display data obtained from wifi.<br>
+
+### Fixed
+:hammer: Fixed a null pointer error caused by a marker that might not be created in rare cases. <br>
+
+### Known issues
+:x: While barometric pressure data is accurate, the calculated altitude is not precise due to the use of a static weather model without real-time meteorological data. However, for floor determination, this is not a significant issue as relative values, which are accurate, can be used for assessment.:ok_hand:<br>
+
+
 
 
 ****
