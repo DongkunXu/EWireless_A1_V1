@@ -97,20 +97,20 @@
                 android:id="@+id/switch_map_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/rounded_corner"
                 android:checked="false"
                 android:text="  Map Type"
                 android:textColor="#CFCFCF"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/Accuracy" />
+                app:layout_constraintTop_toBottomOf="@+id/Altitude" />
 
             <Switch
                 android:id="@+id/geoOrNotSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/rounded_corner"
                 android:checked="false"
@@ -222,6 +222,20 @@
                 android:textSize="15sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/Altitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/rounded_corner"
+                android:padding="3dp"
+                android:text="  Altitude: Calculating...  "
+                android:textColor="#CFCFCF"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/Accuracy" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

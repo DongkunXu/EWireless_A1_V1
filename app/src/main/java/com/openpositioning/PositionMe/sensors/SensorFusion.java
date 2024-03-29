@@ -182,10 +182,11 @@ public class SensorFusion implements SensorEventListener, Observer {
     // --------------------------------------- My Code ------------------------------------------------ //
     // callback functions
     public interface SensorUpdateCallback {
-        void onLocationChanged(LatLng newPosition);
-        void onOrientationChanged(float newOrientation);
-        void onLocationPDRChanged(float[] newPDRPosition);
-        void onAccuracyChanged(float accuracy);
+        void onLocationChanged(LatLng newPosition); // Used to callback location updates
+        void onOrientationChanged(float newOrientation); // Used to callback angle updates
+        void onLocationPDRChanged(float[] newPDRPosition); // Used to call back PDR position update
+        void onAccuracyChanged(float accuracy); // Used to call back positioning accuracy updates
+        void onPressureChanged(float pressure, float altitude); // Used to call back the air pressure value update
     }
 
     private SensorUpdateCallback sensorUpdateCallback;
@@ -292,6 +293,19 @@ public class SensorFusion implements SensorEventListener, Observer {
                     this.elevation = pdrProcessing.updateElevation(SensorManager.getAltitude(
                             SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure));
                 }
+
+                // --------------------------------------- My Code ------------------------------------------------ //
+
+
+
+                float altitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure);
+                if (sensorUpdateCallback != null) {
+                    sensorUpdateCallback.onPressureChanged(pressure, altitude);
+                }
+
+
+
+                // --------------------------------------- My Code ------------------------------------------------ //
                 break;
 
             case Sensor.TYPE_GYROSCOPE:

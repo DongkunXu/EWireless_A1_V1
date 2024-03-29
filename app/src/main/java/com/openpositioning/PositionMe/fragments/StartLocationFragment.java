@@ -158,6 +158,7 @@ public class StartLocationFragment extends Fragment {
     private TextView Accuracy; // display accuracy
     private float  Accuracy_number = 0; // Storage accuracy, initialized to 0
     private Circle accuracyCircle; // Show accuracy circle
+    private TextView Altitude; // Show Altitude
 
 
 
@@ -189,8 +190,11 @@ public class StartLocationFragment extends Fragment {
         ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         View rootView = inflater.inflate(R.layout.fragment_startlocation, container, false);
 
-        //Obtain the start position from the GPS data from the SensorFusion class
+        // Obtain the start position from the GPS data from the SensorFusion class
         startPosition = sensorFusion.getGNSSLatitude(false);
+
+        // Initialize height display
+        Altitude = rootView.findViewById(R.id.Altitude);
 
         // Initialize map fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment)
@@ -293,6 +297,13 @@ public class StartLocationFragment extends Fragment {
                 Log.d("LocationAccuracy", "Current location accuracy: " + accuracy + " meters.");
                 if(Accuracy != null) {
                     Accuracy.setText("  Accuracy: " + accuracy + " m  ");
+                }
+            }
+
+            @Override
+            public void onPressureChanged(float pressure, float altitude) {
+                if(Accuracy != null) {
+                    Altitude.setText("  Altitude: " + altitude + " m  " + "  Pressure: " + pressure );
                 }
             }
 
