@@ -124,6 +124,7 @@ public class StartLocationFragment extends Fragment {
     private LinearLayout FloorButtonsNK;
     private Marker currentPositionMarker; // Display the position from GNSS
     private Marker WifiPositionMarker; // Display the position from wifi
+    private Marker PDRMarker; // Display the position from PDR
     private BroadcastReceiver geofenceBroadcastReceiver;
     private int FloorNU = 1;
     private int FloorNK = 0;
@@ -295,6 +296,8 @@ public class StartLocationFragment extends Fragment {
                     // Update pdr location
                     PDRPosition = newPosition;
                     updatePosition(TruePosition(PDRPosition));
+                    // Update PDRMARKER
+                    updatePDRMarker(TruePosition(PDRPosition));
                 }
                 //Toast.makeText(getContext(), "Walking detected", Toast.LENGTH_SHORT).show();
                 Log.d("SensorFusionCallback", "PDR location update: " + Arrays.toString(newPosition));
@@ -396,8 +399,16 @@ public class StartLocationFragment extends Fragment {
                 // Use new image resources and set marker
                 WifiPositionMarker = mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.wifip))
-                        .icon(resizeMapIcons("wifip",90,90))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.action))
+                        .icon(resizeMapIcons("action",120,120))
+                        .anchor(0.5f, 0.5f)
+                        .flat(true));
+
+                // Use new image resources and set marker
+                PDRMarker = mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pdrp))
+                        .icon(resizeMapIcons("pdrp",120,120))
                         .anchor(0.5f, 0.5f)
                         .flat(true));
 
@@ -485,7 +496,7 @@ public class StartLocationFragment extends Fragment {
         // Initialize TextView to display positioning accuracy
         Accuracy = view.findViewById(R.id.Accuracy);
 
-        // Initialize record button
+        // Initialize record button  // ---------------------- 改成打点按钮 X .
         Button Rec = view.findViewById(R.id.Rec);
         Rec.setText(">");
         redDot.clearAnimation(); // Stop flashing animation
@@ -644,10 +655,13 @@ public class StartLocationFragment extends Fragment {
     // ------------------------------------------------------------------------- Update the wifi marker
 
     private void updateWifiMarker(LatLng wifiPosition) {
-        //Toast.makeText(getContext(), "Marker Update", Toast.LENGTH_SHORT).show();
-
         WifiPositionMarker.setPosition(wifiPosition);
         Log.e("WifiDataUpload", "updateWifiMarker" + wifiPosition);
+    }
+
+    private void updatePDRMarker(LatLng PDRPosition) {
+        PDRMarker.setPosition(PDRPosition);
+        Log.e("PDRUpload", "updatePDRMarker" + PDRPosition);
     }
 
     // ------------------------------------------------------------------------- Refresh the map and redraw the trajectory ↓↓↓
