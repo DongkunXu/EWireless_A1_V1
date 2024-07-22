@@ -5,27 +5,6 @@ Original contributors: Virginia Cangelosi (virginia-cangelosi), Michal Dvorak (d
 
 Require: :heavy_check_mark: Android Studio 4.2 or later :heavy_check_mark: Android SDK 30 or later
 
-## Table of Contents
-- :national_park: [Image Gallery](#image-gallery)
-- :scroll: [Changelog](#changelog)
-- [Installation](#installation)
-- [Usage](#usage)
-- :man_technologist: [Creators](#creators)
-
-
-## Image Gallery
-:clapper: :clapper: :clapper: For the video introduction and live demo, please visit: [Final Presentation For PositionMe Project](https://www.bilibili.com/video/BV1Rt421M7NV/)
-
-<p align="center">
-  <img src="SS/1.png" alt="Image 1" width="400"/>
-  <img src="SS/2.png" alt="Image 2" width="400"/>
-</p>
-<p align="center">
-  <img src="SS/3.png" alt="Image 3" width="400"/>
-  <img src="SS/4.png" alt="Image 4" width="400"/>
-</p>
-
-
 ****
 # Changelog
 
@@ -228,6 +207,7 @@ Interact with the server to get location data.
 :sparkles: Added new "WifiDataUploader" module to interact with the server and retrieve data.<br>
 New modules are contributed by other team members, please refer to [Log from Oscar](Oscar.md)
 
+
 ### Changed
 :recycle: Updated new markers to display data obtained from wifi.<br>
 
@@ -237,23 +217,6 @@ New modules are contributed by other team members, please refer to [Log from Osc
 ### Known issues
 :x: While barometric pressure data is accurate, the calculated altitude is not precise due to the use of a static weather model without real-time meteorological data. However, for floor determination, this is not a significant issue as relative values, which are accurate, can be used for assessment.:ok_hand:<br>
 
-
-## [V0.4.0 - "Batch Optimization  and UI Enhancements"] - 2024-03-29 to 2024-04-09
-Final update.
-
-### Added
-:sparkles: Added batch optimization algorithm.<br>
-:sparkles: Updated the batch optimization algorithm to a dynamic batch optimization algorithm, improving fusion accuracy.<br>
-:sparkles: Added multiple markers to display user positions.<br>
-:sparkles: Deployed automatic floor switching functionality.<br>
-
-### Changed
-:recycle: Optimized the UI to more clearly display the current floor to users.<br>
-
-### Fixed
-:hammer: Removed parts of the geofencing code.<br>
-:hammer: Fixed several null pointer errors that caused instability during long-term operation.<br>
-:hammer: Performance optimizations were implemented.<br>
 
 
 
@@ -276,13 +239,10 @@ Final update.
 
 ### Creators
 
-#### Original contributors ([CloudWalk](https://github.com/openpositioning/DataCollectionTeam6))
+### Original contributors ([CloudWalk](https://github.com/openpositioning/DataCollectionTeam6))
 - Virginia Cangelosi (virginia-cangelosi)
 - Michal Dvorak (dvoramicha)
 - Mate Stodulka (stodimp)
 
 #### New contributors
 - Francisco Zampella (fzampella-huawei)
-
-#### This Version
-- Steve Xu 
